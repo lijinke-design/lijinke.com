@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "site": {
+    "title": "Kim · AI Product Builder",
+    "logoName": "lijinke.com",
+    "characterImage": "assets/character.png?v=2"
+  },
+  "nav": {
+    "links": [
+      { "key": "about",   "zh": "关于我",     "en": "About"   },
+      { "key": "work",    "zh": "工作履历",   "en": "Work"    },
+      { "key": "contact", "zh": "联系方式",   "en": "Contact" }
+    ],
+    "cta": { "zh": "找我聊聊", "en": "Talk to me" }
+  },
+  "hero": {
+    "pill":           { "zh": "资深 AI 产品经理 · 持续构建 0→1", "en": "Senior AI Product Manager · Shipping 0→1" },
+    "titleLead":      { "zh": "构建",            "en": "Building" },
+    "titleAccent":    { "zh": "AI 原生",         "en": "AI-native" },
+    "titleTail":      { "zh": "产品。从 0 到 1。", "en": "products from zero." },
+    "sub":            { "zh": "过去 7 年深耕互联网大厂 AI 产品建设。LLM 应用 · Agent 工作流 · 产品 0→1。", "en": "7 years building AI products at top internet companies. LLM Apps · Agent Workflow · 0→1." },
+    "primaryCta":     { "zh": "开始一段对话",   "en": "Start a conversation" },
+    "secondaryCta":   { "zh": "查看履历",       "en": "View my work" },
+    "contactLabel":   { "zh": "// 联系方式",     "en": "// Reach me" }
+  },
+  "stats": [
+    { "num": "7+",   "label": { "zh": "年产品经验", "en": "Years in Product" } },
+    { "num": "LLM",  "label": { "zh": "原生方向",   "en": "Native" } },
+    { "num": "OPEN", "label": { "zh": "对外合作",   "en": "To Collab" } }
+  ],
+  "about": {
+    "eyebrow": { "zh": "// 关于我",                 "en": "// About me" },
+    "title":   { "zh": "深耕 AI 产品 · 持续构建",   "en": "Deep in AI Product · Always Shipping" },
+    "lead":    { "zh": "资深 AI 产品经理，专注大模型驱动的产品 0→1 与规模化增长。从算法落地到商业化闭环，相信「Ship · Iterate · Win」。", "en": "Senior AI PM, focused on LLM-driven 0→1 product building and scalable growth. From model deployment to business loop—I believe in Ship · Iterate · Win." },
+    "educationTitle": { "zh": "教育背景", "en": "Education" },
+    "education": [
+      {
+        "when":  "2018 — 2021",
+        "title": { "zh": "硕士 · 985 高校 · 信息管理与人工智能方向", "en": "M.S. · Top-tier University · Information Mgmt & AI" },
+        "sub":   { "zh": "国家奖学金 · 校优秀毕业生",                "en": "National Scholarship · Outstanding Graduate" }
+      },
+      {
+        "when":  "2014 — 2018",
+        "title": { "zh": "本科 · 211 高校 · 计算机科学与技术", "en": "B.S. · 211 University · Computer Science" },
+        "sub":   { "zh": "GPA Top 5% · ACM 校队主力",          "en": "GPA Top 5% · ACM Team Core" }
+      }
+    ],
+    "trainingTitle": { "zh": "进修与认证", "en": "Continued Learning" },
+    "training": [
+      {
+        "when":  "2026",
+        "title": { "zh": "AI 产品经理高阶专项研修",                       "en": "Advanced AI Product Manager Program" },
+        "sub":   { "zh": "LLM 应用 · Agent 工作流 · 多模态产品设计",     "en": "LLM Apps · Agent Workflow · Multimodal Product Design" },
+        "desc":  { "zh": "完成 12 个实战项目，含企业级 AI 自动化流水线、Agent 编排平台、AI 内容生产线等。", "en": "Completed 12 hands-on projects: enterprise AI automation pipelines, agent orchestration, AI content production lines." }
+      },
+      {
+        "when":  "2023 — 2024",
+        "title": { "zh": "Stanford Online · LLM with Human Feedback", "en": "Stanford Online · LLM with Human Feedback" },
+        "sub":   { "zh": "A 级结业 · Top 3%",                          "en": "Grade A · Top 3%" },
+        "desc":  { "zh": "", "en": "" }
+      }
+    ],
+    "badges": [
+      { "key": "7+",     "val": { "zh": "年产品经验",     "en": "Years in Product" } },
+      { "key": "3",      "val": { "zh": "个 0→1 大型产品", "en": "0→1 Products Shipped" } },
+      { "key": "12+",    "val": { "zh": "跨职能团队规模", "en": "Cross-functional Team Size" } },
+      { "key": "¥10M+",  "val": { "zh": "主导业务年营收", "en": "ARR Led" } }
+    ]
+  },
+  "work": {
+    "eyebrow": { "zh": "// 工作履历",                                "en": "// Experience" },
+    "title":   { "zh": "从算法落地，到业务增长。",                     "en": "From model to growth." },
+    "lead":    { "zh": "过去 7 年深度参与互联网大厂 AI 产品建设，覆盖 C 端工具、B 端 SaaS 与企业内部 AI 转型。", "en": "7 years building AI products at top internet companies — across consumer tools, B2B SaaS, and enterprise AI transformation." },
+    "items": [
+      {
+        "when":  "2023.06 — 至今",
+        "title": { "zh": "高级 AI 产品经理 · 某头部互联网公司", "en": "Senior AI Product Manager · Top Internet Co." },
+        "sub":   { "zh": "AI Native 产品中心 · 北京",            "en": "AI-Native Product Center · Beijing" },
+        "bullets": [
+          { "zh": "主导 LLM 驱动的 AI 助手类产品从 0→1 全周期落地：完成核心场景拆解、产品定义、跨端协同算法/工程/设计 4 个团队 12 人，上线 6 个月内驱动 DAU 突破 80 万、付费转化率提升 217%，沉淀公司首批 AI-Native 产品方法论并写入年度战略案例。", "en": "Led 0→1 launch of an LLM-powered AI assistant product end-to-end: scenario decomposition, product definition, coordinated 4 cross-functional teams (12 people) across algo/eng/design. Drove DAU past 800K and paid conversion +217% within 6 months post-launch; established the company's first AI-Native product methodology, codified into the annual strategy playbook." },
+          { "zh": "负责企业级 Agent 工作流体系搭建：抽象通用任务编排框架，串联飞书 / Notion / 内部知识库等 8+ 系统，覆盖运营、HR、客服三大业务线，单流程人效提升 60%，年度节省人力成本约 1200 万元，作为公司 AI 转型最佳实践被写入年终全员信。", "en": "Built the enterprise-grade Agent workflow system: designed a generic task orchestration framework integrating Lark / Notion / internal knowledge base across 8+ systems, covering Ops, HR, and CS. Boosted per-process efficiency by 60%, saving ~¥12M in annual labor cost; cited as the company's flagship AI transformation case in the year-end all-hands letter." }
+        ]
+      },
+      {
+        "when":  "2021.07 — 2023.05",
+        "title": { "zh": "产品经理 · 某互联网大厂", "en": "Product Manager · Major Internet Co." },
+        "sub":   { "zh": "C 端增长 · 上海",          "en": "Consumer Growth · Shanghai" },
+        "bullets": [
+          { "zh": "负责核心工具产品的 AI 化升级，引入 NLP 推荐与个性化推送机制，月活用户增长 35%、用户留存 D30 提升 18pp，连续 3 个季度获评团队最佳产品迭代。", "en": "Led AI upgrade of a core consumer tool — introduced NLP-based recommendation and personalized push; +35% MAU, +18pp D30 retention; awarded Best Product Iteration 3 quarters in a row." },
+          { "zh": "搭建用户分层与北极星指标体系，建立可复用增长实验框架，年度执行 A/B 实验 200+ 次，整体业务 GMV 同比增长 41%。",          "en": "Established user segmentation and North-Star metric framework with a reusable growth experimentation system; ran 200+ A/B tests in the year, driving 41% YoY GMV growth." }
+        ]
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": { "zh": "// 联系方式",              "en": "// Contact" },
+    "title":   { "zh": "Open to Collab.",            "en": "Open to Collab." },
+    "lead":    { "zh": "欢迎来聊 AI 产品共创、LLM 应用落地、内容共建。邮件最稳，微信最快。", "en": "Always open for AI product co-creation, LLM application landing, and content collaboration. Email is the most reliable; WeChat the fastest." },
+    "methods": [
+      { "type": "email",  "label": "Email",       "val": "hi@lijinke.com",          "href": "mailto:hi@lijinke.com",                                  "copy": "hi@lijinke.com" },
+      { "type": "wechat", "label": "WeChat",      "val": "Kim-13268374345",         "href": "#",                                                       "copy": "Kim-13268374345" },
+      { "type": "github", "label": "GitHub",      "val": "@lijinke-design",         "href": "https://github.com/lijinke-design",                       "copy": "" },
+      { "type": "x",      "label": "X / Twitter", "val": "@Kim1620395687",          "href": "https://x.com/Kim1620395687",                             "copy": "" },
+      { "type": "zhihu",  "label": "知乎",         "val": "待补充链接",              "href": "https://www.zhihu.com/people/YOUR_ZHIHU_ID",              "copy": "" },
+      { "type": "phone",  "label": "Phone",       "val": "+86 132 6837 4345",       "href": "tel:+8613268374345",                                      "copy": "+86 13268374345" }
+    ]
+  },
+  "bubble": { "zh": "Hey 👋 点我聊天", "en": "Hey 👋 Click to chat" },
+  "chat": {
+    "name": "Kim",
+    "status": { "zh": "AI-native · 在线", "en": "AI-native · online" },
+    "greeting": [
+      { "zh": "Hey 👋 我是 Kim，欢迎来到我的小宇宙。", "en": "Hey 👋 I'm Kim, welcome to my little universe." },
+      { "zh": "点下面的话题，我们可以聊聊我在做什么 ↓", "en": "Pick a topic below — let's talk about what I'm building ↓" }
+    ],
+    "topicsLabel": { "zh": "// 挑个话题", "en": "// Pick a topic" },
+    "topics": [
+      {
+        "key": "who",
+        "q": { "zh": "你是谁?", "en": "Who are you?" },
+        "a": [
+          { "zh": "Hi，我是 Kim，资深 AI 产品经理。", "en": "Hi, I'm Kim, a Senior AI Product Manager." },
+          { "zh": "关键词：LLM 应用 · Agent 工作流 · AI 工具链 · 产品 0→1。", "en": "Keywords: LLM apps · Agent workflow · AI toolchain · 0→1." },
+          { "zh": "相信「做出来」胜过「想清楚」——所以这个站点本身也是我的一个作品。", "en": "I trust 'shipped' over 'discussed' — this site itself is one of my outputs." }
+        ]
+      },
+      {
+        "key": "work",
+        "q": { "zh": "你最近在做什么项目?", "en": "What are you working on?" },
+        "a": [
+          { "zh": "正在跑一条 AI 自动化流水线 🚀", "en": "Building an AI automation pipeline 🚀" },
+          { "zh": "让 AI 每天自动采集团队飞书日报 → LLM 生成结构化小结 → 自动推送回飞书。", "en": "AI auto-scrapes the team's Lark daily reports → LLM generates a structured summary → pushed back to Lark." },
+          { "zh": "下一步把分享讲稿与 PPT 也接进同一条管线，实现「输入想法 → 输出成品」。", "en": "Next: pipe talk scripts and decks into the same flow — 'input idea → output deliverable'." }
+        ]
+      },
+      {
+        "key": "collab",
+        "q": { "zh": "能合作吗?", "en": "Open for collab?" },
+        "a": [
+          { "zh": "当然可以，我对外标签是 OPEN to Collab 🤝", "en": "Always — I'm officially OPEN to Collab 🤝" },
+          { "zh": "尤其欢迎：AI 产品共创 / LLM 应用落地 / 内容共建。", "en": "Especially: AI product co-creation, LLM application landing, content collab." },
+          { "zh": "发邮件最快：hi@lijinke.com，简单说清楚背景和想法就行。", "en": "Email me: hi@lijinke.com — just share your context and idea briefly." }
+        ]
+      },
+      {
+        "key": "contact",
+        "q": { "zh": "怎么联系你?", "en": "How can I reach you?" },
+        "a": [
+          { "zh": "右下角图标随你挑：", "en": "Pick any icon below:" },
+          { "zh": "· ✉️ Email · 💬 微信 (Kim-13268374345)", "en": "· ✉️ Email · 💬 WeChat (Kim-13268374345)" },
+          { "zh": "· 🐙 GitHub · 𝕏 @Kim1620395687 · 知乎", "en": "· 🐙 GitHub · 𝕏 @Kim1620395687 · Zhihu" },
+          { "zh": "邮箱最稳，微信最快。", "en": "Email is most reliable, WeChat is fastest." }
+        ]
+      },
+      {
+        "key": "learn",
+        "q": { "zh": "怎么入门 AI 产品?", "en": "How to get into AI Product?" },
+        "a": [
+          { "zh": "我自己的体感：少看课，多做小项目。", "en": "My take: less courseware, more small projects." },
+          { "zh": "路径：先用 ChatGPT/Claude 把日常的一件事自动化掉 → 再用 API 把它做成「别人也能用」的产品 → 在过程中补 LLM / Agent / 提示工程的知识。", "en": "Path: automate one daily task with ChatGPT/Claude → ship it as a product others can use via API → pick up LLM/Agent/prompt theory along the way." },
+          { "zh": "想细聊？发我邮件。", "en": "Want to go deeper? Email me." }
+        ]
+      }
+    ]
+  }
+}

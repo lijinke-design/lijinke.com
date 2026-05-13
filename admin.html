@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · lijinke.com</title>
+<style>
+  :root {
+    --bg-0: #050010;
+    --bg-1: #0d0428;
+    --bg-2: #14082f;
+    --violet-1: #7c3aed;
+    --violet-2: #a855f7;
+    --violet-3: #c084fc;
+    --pink: #d946ef;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #f4f0ff;
+    --muted: #a99dc8;
+    --border: rgba(192, 132, 252, 0.2);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 0%, rgba(168, 85, 247, 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(217, 70, 239, 0.15), transparent 60%),
+      var(--bg-0);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--violet-3); }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ====== Login ====== */
+  .login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 40px;
+    background: rgba(13, 4, 40, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .login-card h1 {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, var(--violet-3) 60%, var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .login-card .sub { color: var(--muted); margin-bottom: 28px; font-size: 14px; line-height: 1.6; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .input, .textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(168, 85, 247, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .input:focus, .textarea:focus {
+    border-color: var(--violet-3);
+    background: rgba(168, 85, 247, 0.12);
+  }
+  .textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  .btn {
+    padding: 12px 22px;
+    background: linear-gradient(135deg, var(--violet-1), var(--violet-2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(124, 58, 237, 0.6); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-ghost {
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+  .btn-ghost:hover { background: rgba(168, 85, 247, 0.2); box-shadow: none; }
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+  }
+  .btn-small { padding: 6px 12px; font-size: 12px; }
+
+  .note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(192, 132, 252, 0.08);
+    border-left: 3px solid var(--violet-3);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .note a { color: var(--violet-3); }
+  .err {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 8px;
+    color: var(--red);
+    font-size: 13px;
+  }
+
+  /* ====== Editor ====== */
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 16px 28px;
+    background: rgba(5, 0, 16, 0.85);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .top .left { display: flex; align-items: center; gap: 14px; }
+  .top .title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .top .repo {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .top .right { display: flex; align-items: center; gap: 10px; }
+  .top .dirty-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+  .top .dirty-dot.dirty { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    background: rgba(13, 4, 40, 0.3);
+  }
+  .sidebar .nav-item {
+    display: block;
+    padding: 10px 14px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .sidebar .nav-item:hover { background: rgba(168, 85, 247, 0.08); color: #fff; }
+  .sidebar .nav-item.active {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(168, 85, 247, 0.2));
+    color: #fff;
+    border: 1px solid var(--border);
+  }
+  .sidebar .group {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 14px 14px 6px;
+  }
+
+  .main { padding: 36px 40px 80px; max-width: 900px; }
+  .main h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, #fff, var(--violet-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .main .sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .section {
+    background: rgba(168, 85, 247, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+  .section h3 {
+    font-size: 14px;
+    color: var(--violet-3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row.three { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 800px) { .row, .row.three { grid-template-columns: 1fr; } }
+
+  .item-card {
+    background: rgba(13, 4, 40, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .item-card .item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .item-card .item-head .idx {
+    font-size: 11px;
+    color: var(--violet-3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .item-card .item-actions { display: flex; gap: 6px; }
+
+  /* Save toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 200;
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.ok { background: rgba(74, 222, 128, 0.15); border-color: var(--green); color: #d1fae5; }
+  .toast.err { background: rgba(248, 113, 113, 0.15); border-color: var(--red); color: #fecaca; }
+
+  .preview-link {
+    margin-left: auto;
+    color: var(--violet-3);
+    text-decoration: none;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Login ============ -->
+<div class="login" id="loginView">
+  <div class="login-card">
+    <h1>lijinke.com · 后台</h1>
+    <p class="sub">用 GitHub 个人访问令牌 (PAT) 登录。所有改动会以 commit 形式保存到你的 GitHub 仓库，自动触发 Cloudflare Pages 重新部署。</p>
+
+    <div class="field">
+      <label>GitHub 用户名</label>
+      <input class="input" id="ghOwner" placeholder="lijinke-design" />
+    </div>
+    <div class="field">
+      <label>仓库名</label>
+      <input class="input" id="ghRepo" placeholder="lijinke-site" />
+    </div>
+    <div class="field">
+      <label>分支 (默认 main)</label>
+      <input class="input" id="ghBranch" placeholder="main" value="main" />
+    </div>
+    <div class="field">
+      <label>GitHub Personal Access Token (PAT)</label>
+      <input class="input" id="ghToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxx" />
+    </div>
+
+    <button class="btn" id="loginBtn" style="width:100%;margin-top:8px">登录并加载内容</button>
+
+    <div class="err" id="loginErr" style="display:none"></div>
+
+    <div class="note">
+      <b>怎么拿到 PAT?</b><br/>
+      1. 打开 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">GitHub → Settings → Developer settings → Fine-grained tokens</a><br/>
+      2. Resource owner 选你自己，Repository access 选 <b>Only select repositories</b>，勾选你的网站 repo<br/>
+      3. Repository permissions 里 <b>Contents</b> 设为 <b>Read and write</b><br/>
+      4. Generate token，复制 `ghp_` 开头的字符串粘到上面<br/>
+      <br/>Token 只会存在你的浏览器 localStorage，不会上传到任何服务器。
+    </div>
+  </div>
+</div>
+
+<!-- ============ Editor ============ -->
+<div id="editorView" style="display:none">
+  <div class="top">
+    <div class="left">
+      <span class="dirty-dot" id="dirtyDot"></span>
+      <div>
+        <div class="title">内容编辑器</div>
+        <div class="repo" id="repoLabel"></div>
+      </div>
+    </div>
+    <div class="right">
+      <a class="preview-link" id="previewLink" target="_blank">预览站点 ↗</a>
+      <button class="btn btn-ghost btn-small" id="reloadBtn">重新拉取</button>
+      <button class="btn btn-ghost btn-small" id="logoutBtn">退出登录</button>
+      <button class="btn" id="saveBtn">保存并发布</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="group">站点</div>
+      <button class="nav-item active" data-tab="site">基础信息</button>
+      <button class="nav-item" data-tab="nav">导航 & CTA</button>
+      <div class="group">首页</div>
+      <button class="nav-item" data-tab="hero">Hero 区</button>
+      <button class="nav-item" data-tab="stats">数据条</button>
+      <button class="nav-item" data-tab="bubble">人物气泡</button>
+      <div class="group">二级页</div>
+      <button class="nav-item" data-tab="about">关于我</button>
+      <button class="nav-item" data-tab="work">工作履历</button>
+      <button class="nav-item" data-tab="contact">联系方式</button>
+      <div class="group">交互</div>
+      <button class="nav-item" data-tab="chat">聊天气泡</button>
+      <div class="group">高级</div>
+      <button class="nav-item" data-tab="json">原始 JSON</button>
+    </div>
+
+    <div class="main" id="main"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 状态 ============ */
+const STORAGE_KEY = 'admin_auth_v1';
+let auth = null;     // { owner, repo, branch, token }
+let content = null;  // 当前编辑中的 content.json 对象
+let originalContent = null;
+let fileSha = null;
+let activeTab = 'site';
+
+const $ = sel => document.querySelector(sel);
+const showToast = (msg, type='ok') => {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 2600);
+};
+
+/* ============ 登录 ============ */
+function tryRestore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    auth = JSON.parse(raw);
+    if (auth.owner && auth.repo && auth.token) {
+      $('#ghOwner').value = auth.owner;
+      $('#ghRepo').value = auth.repo;
+      $('#ghBranch').value = auth.branch || 'main';
+      $('#ghToken').value = auth.token;
+    }
+  } catch {}
+}
+tryRestore();
+
+$('#loginBtn').addEventListener('click', async () => {
+  const owner  = $('#ghOwner').value.trim();
+  const repo   = $('#ghRepo').value.trim();
+  const branch = ($('#ghBranch').value.trim() || 'main');
+  const token  = $('#ghToken').value.trim();
+  if (!owner || !repo || !token) {
+    showLoginErr('请填写用户名、仓库名和 Token');
+    return;
+  }
+  auth = { owner, repo, branch, token };
+  const ok = await loadContentFromGitHub();
+  if (ok) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
+    enterEditor();
+  }
+});
+
+function showLoginErr(msg) {
+  const el = $('#loginErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ============ GitHub API ============ */
+async function gh(path, opts = {}) {
+  const res = await fetch(`https://api.github.com/repos/${auth.owner}/${auth.repo}${path}`, {
+    ...opts,
+    headers: {
+      'Authorization': `Bearer ${auth.token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    let msg = `${res.status}`;
+    try { const j = await res.json(); msg += ' · ' + (j.message || ''); } catch {}
+    throw new Error(msg);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function loadContentFromGitHub() {
+  try {
+    const file = await gh(`/contents/content.json?ref=${encodeURIComponent(auth.branch)}`);
+    fileSha = file.sha;
+    const decoded = decodeURIComponent(escape(atob(file.content.replace(/\n/g, ''))));
+    content = JSON.parse(decoded);
+    originalContent = JSON.parse(decoded);
+    return true;
+  } catch (e) {
+    showLoginErr('加载失败: ' + e.message + '。请确认仓库名、分支以及 content.json 是否存在。');
+    return false;
+  }
+}
+
+async function saveContentToGitHub() {
+  const json = JSON.stringify(content, null, 2);
+  // Base64 encode (handles UTF-8)
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const body = {
+    message: `[admin] update content.json @ ${new Date().toISOString()}`,
+    content: b64,
+    branch: auth.branch,
+    sha: fileSha
+  };
+  const res = await gh('/contents/content.json', {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  });
+  fileSha = res.content.sha;
+  originalContent = JSON.parse(JSON.stringify(content));
+  updateDirty();
+}
+
+/* ============ 编辑器 UI ============ */
+function enterEditor() {
+  $('#loginView').style.display = 'none';
+  $('#editorView').style.display = 'block';
+  $('#repoLabel').textContent = `${auth.owner}/${auth.repo} @ ${auth.branch}`;
+  $('#previewLink').href = `https://${auth.owner === 'lijinke-design' ? 'lijinke.com' : auth.owner + '.github.io/' + auth.repo}`;
+  renderTab(activeTab);
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.addEventListener('click', () => {
+      activeTab = b.dataset.tab;
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.toggle('active', x === b));
+      renderTab(activeTab);
+    });
+  });
+}
+
+$('#logoutBtn').addEventListener('click', () => {
+  if (isDirty() && !confirm('有未保存的改动,确认退出?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+$('#reloadBtn').addEventListener('click', async () => {
+  if (isDirty() && !confirm('有未保存的改动,确认重新拉取?')) return;
+  const ok = await loadContentFromGitHub();
+  if (ok) { renderTab(activeTab); showToast('已重新拉取最新内容'); }
+});
+
+$('#saveBtn').addEventListener('click', async () => {
+  const btn = $('#saveBtn');
+  btn.disabled = true;
+  btn.textContent = '发布中...';
+  try {
+    await saveContentToGitHub();
+    showToast('已发布 ✓ 30 秒后 lijinke.com 自动更新');
+  } catch (e) {
+    showToast('发布失败: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '保存并发布';
+  }
+});
+
+/* ============ 脏数据追踪 ============ */
+function isDirty() {
+  return JSON.stringify(content) !== JSON.stringify(originalContent);
+}
+function updateDirty() {
+  $('#dirtyDot').classList.toggle('dirty', isDirty());
+}
+
+/* ============ 表单工具 ============ */
+// 通用 onChange: 改 content 然后 updateDirty
+function onChange() { updateDirty(); }
+
+// 创建一个 input field
+function field(label, value, onInput, type='input') {
+  const div = document.createElement('div');
+  div.className = 'field';
+  const lab = document.createElement('label');
+  lab.textContent = label;
+  const inp = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+  inp.className = type === 'textarea' ? 'textarea' : 'input';
+  inp.value = value || '';
+  inp.addEventListener('input', () => { onInput(inp.value); onChange(); });
+  div.appendChild(lab);
+  div.appendChild(inp);
+  return div;
+}
+
+// 双语 field (zh / en)
+function bilingualField(label, obj, key='zh', type='input') {
+  const wrap = document.createElement('div');
+  wrap.className = 'row';
+  wrap.appendChild(field(label + ' · 中文', obj.zh || '', v => obj.zh = v, type));
+  wrap.appendChild(field(label + ' · 英文', obj.en || '', v => obj.en = v, type));
+  return wrap;
+}
+
+function section(title, ...kids) {
+  const s = document.createElement('div');
+  s.className = 'section';
+  const h = document.createElement('h3');
+  h.textContent = title;
+  s.appendChild(h);
+  kids.forEach(k => k && s.appendChild(k));
+  return s;
+}
+
+function sectionWithAdd(title, addLabel, onAdd, ...kids) {
+  const s = section(title, ...kids);
+  const h = s.querySelector('h3');
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-ghost btn-small';
+  btn.textContent = addLabel;
+  btn.onclick = () => { onAdd(); renderTab(activeTab); updateDirty(); };
+  h.appendChild(btn);
+  return s;
+}
+
+function itemCard(idx, total, onRemove, onUp, onDown, ...kids) {
+  const c = document.createElement('div');
+  c.className = 'item-card';
+  const head = document.createElement('div');
+  head.className = 'item-head';
+  const lbl = document.createElement('span');
+  lbl.className = 'idx';
+  lbl.textContent = `#${idx + 1} / ${total}`;
+  const actions = document.createElement('div');
+  actions.className = 'item-actions';
+  if (idx > 0) {
+    const up = document.createElement('button');
+    up.className = 'btn btn-ghost btn-small'; up.textContent = '↑';
+    up.onclick = () => { onUp(); renderTab(activeTab); updateDirty(); };
+    actions.appendChild(up);
+  }
+  if (idx < total - 1) {
+    const dn = document.createElement('button');
+    dn.className = 'btn btn-ghost btn-small'; dn.textContent = '↓';
+    dn.onclick = () => { onDown(); renderTab(activeTab); updateDirty(); };
+    actions.appendChild(dn);
+  }
+  const rm = document.createElement('button');
+  rm.className = 'btn btn-danger btn-small'; rm.textContent = '删除';
+  rm.onclick = () => {
+    if (!confirm('确定删除这一项?')) return;
+    onRemove(); renderTab(activeTab); updateDirty();
+  };
+  actions.appendChild(rm);
+  head.appendChild(lbl); head.appendChild(actions);
+  c.appendChild(head);
+  kids.forEach(k => k && c.appendChild(k));
+  return c;
+}
+
+/* ============ Tab 渲染 ============ */
+function renderTab(name) {
+  const main = $('#main');
+  main.innerHTML = '';
+  const titleEl = document.createElement('h2');
+  const subEl = document.createElement('p');
+  subEl.className = 'sub';
+  main.appendChild(titleEl);
+  main.appendChild(subEl);
+
+  const T = {
+    site:    ['基础信息',   '浏览器标签标题、Logo 名称、人物图片路径'],
+    nav:     ['导航 & CTA', '顶部导航的链接文字和右上角按钮'],
+    hero:    ['Hero 区',    '首页大标题、副标题、按钮文案、标签'],
+    stats:   ['数据条',     'Hero 下方三个数字徽章'],
+    bubble:  ['人物气泡',   '人物头顶的浮动气泡文字'],
+    about:   ['关于我',     '教育背景、进修认证、徽章'],
+    work:    ['工作履历',   '过往工作经历与 bullets'],
+    contact: ['联系方式',   '所有联系方式图标与卡片'],
+    chat:    ['聊天气泡',   '名字、状态、欢迎语、话题与回复'],
+    json:    ['原始 JSON',  '直接编辑 JSON,适用于高级修改'],
+  };
+  titleEl.textContent = T[name][0];
+  subEl.textContent = T[name][1];
+
+  if (!content) return;
+
+  ({
+    site:    renderSiteTab,
+    nav:     renderNavTab,
+    hero:    renderHeroTab,
+    stats:   renderStatsTab,
+    bubble:  renderBubbleTab,
+    about:   renderAboutTab,
+    work:    renderWorkTab,
+    contact: renderContactTab,
+    chat:    renderChatTab,
+    json:    renderJsonTab,
+  })[name](main);
+}
+
+function renderSiteTab(root) {
+  if (!content.site) content.site = {};
+  root.appendChild(section('Site',
+    field('浏览器标题', content.site.title, v => content.site.title = v),
+    field('Logo 显示文字', content.site.logoName, v => content.site.logoName = v),
+    field('人物图片路径', content.site.characterImage, v => content.site.characterImage = v)
+  ));
+}
+
+function renderNavTab(root) {
+  if (!content.nav) content.nav = { links: [], cta: { zh: '', en: '' } };
+  const linksSec = sectionWithAdd('导航链接', '+ 添加链接', () => {
+    content.nav.links = content.nav.links || [];
+    content.nav.links.push({ key: 'new', zh: '新链接', en: 'New' });
+  });
+  (content.nav.links || []).forEach((l, i, arr) => {
+    const c = itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('key (about / work / contact)', l.key, v => l.key = v),
+      bilingualField('显示文字', l)
+    );
+    linksSec.appendChild(c);
+  });
+  root.appendChild(linksSec);
+
+  root.appendChild(section('右上角按钮 (Talk to me)',
+    bilingualField('按钮文字', content.nav.cta = content.nav.cta || { zh: '', en: '' })
+  ));
+}
+
+function renderHeroTab(root) {
+  const h = content.hero = content.hero || {};
+  ['pill','titleLead','titleAccent','titleTail','sub','primaryCta','secondaryCta','contactLabel'].forEach(k => {
+    h[k] = h[k] || { zh: '', en: '' };
+  });
+  root.appendChild(section('标签 (Pill)', bilingualField('胶囊文字', h.pill)));
+  root.appendChild(section('主标题',
+    bilingualField('开头', h.titleLead),
+    bilingualField('高亮词 (粉色渐变)', h.titleAccent),
+    bilingualField('结尾', h.titleTail)
+  ));
+  root.appendChild(section('副标题', bilingualField('副标题', h.sub, 'zh', 'textarea')));
+  root.appendChild(section('CTA 按钮',
+    bilingualField('主按钮 (开始对话)', h.primaryCta),
+    bilingualField('次按钮 (查看履历)', h.secondaryCta)
+  ));
+  root.appendChild(section('联系方式标签', bilingualField('// 联系方式', h.contactLabel)));
+}
+
+function renderStatsTab(root) {
+  if (!Array.isArray(content.stats)) content.stats = [];
+  const sec = sectionWithAdd('数字徽章 (建议 3 个)', '+ 添加', () => {
+    content.stats.push({ num: 'NEW', label: { zh: '说明', en: 'Label' } });
+  });
+  content.stats.forEach((s, i, arr) => {
+    s.label = s.label || { zh: '', en: '' };
+    const c = itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('数字 / 短词', s.num, v => s.num = v),
+      bilingualField('说明文字', s.label)
+    );
+    sec.appendChild(c);
+  });
+  root.appendChild(sec);
+}
+
+function renderBubbleTab(root) {
+  content.bubble = content.bubble || { zh: '', en: '' };
+  root.appendChild(section('对话气泡文字', bilingualField('气泡内容', content.bubble)));
+}
+
+function renderAboutTab(root) {
+  const a = content.about = content.about || {};
+  ['eyebrow','title','lead','educationTitle','trainingTitle'].forEach(k => a[k] = a[k] || { zh:'',en:'' });
+  a.education = a.education || [];
+  a.training = a.training || [];
+  a.badges = a.badges || [];
+
+  root.appendChild(section('头部',
+    bilingualField('Eyebrow (// 关于我)', a.eyebrow),
+    bilingualField('大标题', a.title),
+    bilingualField('引言', a.lead, 'zh', 'textarea')
+  ));
+
+  root.appendChild(section('章节标题',
+    bilingualField('教育背景标题', a.educationTitle),
+    bilingualField('进修认证标题', a.trainingTitle),
+  ));
+
+  const eduSec = sectionWithAdd('教育背景', '+ 添加', () => {
+    a.education.push({ when: '2020 — 2024', title: { zh: '学位 · 学校', en: 'Degree · School' }, sub: { zh: '', en: '' } });
+  });
+  a.education.forEach((it, i, arr) => {
+    it.title = it.title || { zh:'',en:'' }; it.sub = it.sub || { zh:'',en:'' };
+    eduSec.appendChild(itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('时间', it.when, v => it.when = v),
+      bilingualField('标题', it.title),
+      bilingualField('副标题', it.sub)
+    ));
+  });
+  root.appendChild(eduSec);
+
+  const trSec = sectionWithAdd('进修与认证', '+ 添加', () => {
+    a.training.push({ when: '2026', title: { zh: '', en: '' }, sub: { zh: '', en: '' }, desc: { zh: '', en: '' } });
+  });
+  a.training.forEach((it, i, arr) => {
+    it.title = it.title || { zh:'',en:'' };
+    it.sub = it.sub || { zh:'',en:'' };
+    it.desc = it.desc || { zh:'',en:'' };
+    trSec.appendChild(itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('时间', it.when, v => it.when = v),
+      bilingualField('标题', it.title),
+      bilingualField('副标题', it.sub),
+      bilingualField('描述 (可选)', it.desc, 'zh', 'textarea')
+    ));
+  });
+  root.appendChild(trSec);
+
+  const badgeSec = sectionWithAdd('数据徽章 (Badges)', '+ 添加', () => {
+    a.badges.push({ key: 'NEW', val: { zh: '说明', en: 'Label' } });
+  });
+  a.badges.forEach((b, i, arr) => {
+    b.val = b.val || { zh:'',en:'' };
+    badgeSec.appendChild(itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('数值', b.key, v => b.key = v),
+      bilingualField('说明', b.val)
+    ));
+  });
+  root.appendChild(badgeSec);
+}
+
+function renderWorkTab(root) {
+  const w = content.work = content.work || {};
+  ['eyebrow','title','lead'].forEach(k => w[k] = w[k] || { zh:'',en:'' });
+  w.items = w.items || [];
+
+  root.appendChild(section('头部',
+    bilingualField('Eyebrow', w.eyebrow),
+    bilingualField('大标题', w.title),
+    bilingualField('引言', w.lead, 'zh', 'textarea')
+  ));
+
+  const sec = sectionWithAdd('工作经历', '+ 添加经历', () => {
+    w.items.push({ when: '202X — 至今', title: { zh: '职位 · 公司', en: 'Role · Company' }, sub: { zh: '', en: '' }, bullets: [{ zh: '', en: '' }] });
+  });
+  w.items.forEach((it, i, arr) => {
+    it.title = it.title || { zh:'',en:'' };
+    it.sub = it.sub || { zh:'',en:'' };
+    it.bullets = it.bullets || [];
+    const card = itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('时间', it.when, v => it.when = v),
+      bilingualField('职位 · 公司', it.title),
+      bilingualField('部门 · 地点', it.sub)
+    );
+
+    const bulletWrap = document.createElement('div');
+    bulletWrap.style.marginTop = '10px';
+    const lab = document.createElement('div');
+    lab.style.cssText = 'font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;';
+    lab.innerHTML = '<span>BULLETS</span>';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-ghost btn-small';
+    addBtn.textContent = '+ 添加 bullet';
+    addBtn.onclick = () => { it.bullets.push({ zh: '', en: '' }); renderTab(activeTab); updateDirty(); };
+    lab.appendChild(addBtn);
+    bulletWrap.appendChild(lab);
+
+    it.bullets.forEach((b, bi, barr) => {
+      const bc = document.createElement('div');
+      bc.className = 'item-card';
+      bc.style.background = 'rgba(168, 85, 247, 0.04)';
+      const bh = document.createElement('div');
+      bh.className = 'item-head';
+      bh.innerHTML = `<span class="idx">Bullet #${bi+1}</span>`;
+      const bact = document.createElement('div');
+      bact.className = 'item-actions';
+      const brm = document.createElement('button');
+      brm.className = 'btn btn-danger btn-small'; brm.textContent = '删';
+      brm.onclick = () => { barr.splice(bi, 1); renderTab(activeTab); updateDirty(); };
+      bact.appendChild(brm);
+      bh.appendChild(bact);
+      bc.appendChild(bh);
+      bc.appendChild(bilingualField('Bullet 内容', b, 'zh', 'textarea'));
+      bulletWrap.appendChild(bc);
+    });
+    card.appendChild(bulletWrap);
+    sec.appendChild(card);
+  });
+  root.appendChild(sec);
+}
+
+function renderContactTab(root) {
+  const c = content.contact = content.contact || {};
+  ['eyebrow','title','lead'].forEach(k => c[k] = c[k] || { zh:'',en:'' });
+  c.methods = c.methods || [];
+
+  root.appendChild(section('头部',
+    bilingualField('Eyebrow', c.eyebrow),
+    bilingualField('大标题', c.title),
+    bilingualField('引言', c.lead, 'zh', 'textarea')
+  ));
+
+  const sec = sectionWithAdd('联系方式 (图标类型: email / wechat / github / x / zhihu / phone)', '+ 添加', () => {
+    c.methods.push({ type: 'email', label: 'Email', val: '', href: '', copy: '' });
+  });
+  c.methods.forEach((m, i, arr) => {
+    sec.appendChild(itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      (() => {
+        const r = document.createElement('div'); r.className = 'row';
+        r.appendChild(field('图标类型', m.type, v => m.type = v));
+        r.appendChild(field('显示标签', m.label, v => m.label = v));
+        return r;
+      })(),
+      field('显示值 (val)', m.val, v => m.val = v),
+      field('链接 (href, 留空填 #)', m.href, v => m.href = v),
+      field('点击复制内容 (copy, 可选)', m.copy, v => m.copy = v)
+    ));
+  });
+  root.appendChild(sec);
+}
+
+function renderChatTab(root) {
+  const c = content.chat = content.chat || {};
+  c.status = c.status || { zh:'',en:'' };
+  c.greeting = c.greeting || [];
+  c.topicsLabel = c.topicsLabel || { zh:'',en:'' };
+  c.topics = c.topics || [];
+
+  root.appendChild(section('基础',
+    field('显示名字', c.name || 'Kim', v => c.name = v),
+    bilingualField('状态文字 (AI-native · 在线)', c.status)
+  ));
+
+  const greetSec = sectionWithAdd('欢迎语 (按顺序逐条显示)', '+ 添加一行', () => {
+    c.greeting.push({ zh: '', en: '' });
+  });
+  c.greeting.forEach((g, i, arr) => {
+    greetSec.appendChild(itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      bilingualField('内容', g, 'zh', 'textarea')
+    ));
+  });
+  root.appendChild(greetSec);
+
+  root.appendChild(section('话题区标签', bilingualField('// 挑个话题', c.topicsLabel)));
+
+  const topicSec = sectionWithAdd('话题 (按钮 + 回复)', '+ 添加话题', () => {
+    c.topics.push({ key: 'new' + Date.now(), q: { zh: '新问题?', en: 'New?' }, a: [{ zh: '', en: '' }] });
+  });
+  c.topics.forEach((t, i, arr) => {
+    t.q = t.q || { zh:'',en:'' };
+    t.a = t.a || [];
+    const card = itemCard(i, arr.length,
+      () => arr.splice(i, 1),
+      () => [arr[i-1], arr[i]] = [arr[i], arr[i-1]],
+      () => [arr[i+1], arr[i]] = [arr[i], arr[i+1]],
+      field('话题 key (英文,唯一)', t.key, v => t.key = v),
+      bilingualField('按钮上的问题', t.q)
+    );
+
+    const ansWrap = document.createElement('div');
+    ansWrap.style.marginTop = '10px';
+    const lab = document.createElement('div');
+    lab.style.cssText = 'font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;';
+    lab.innerHTML = '<span>回复 (按顺序逐条显示)</span>';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-ghost btn-small';
+    addBtn.textContent = '+ 添加回复';
+    addBtn.onclick = () => { t.a.push({ zh: '', en: '' }); renderTab(activeTab); updateDirty(); };
+    lab.appendChild(addBtn);
+    ansWrap.appendChild(lab);
+
+    t.a.forEach((line, li, larr) => {
+      const ac = document.createElement('div');
+      ac.className = 'item-card';
+      ac.style.background = 'rgba(168, 85, 247, 0.04)';
+      const ah = document.createElement('div');
+      ah.className = 'item-head';
+      ah.innerHTML = `<span class="idx">回复 #${li+1}</span>`;
+      const aact = document.createElement('div');
+      aact.className = 'item-actions';
+      const arm = document.createElement('button');
+      arm.className = 'btn btn-danger btn-small'; arm.textContent = '删';
+      arm.onclick = () => { larr.splice(li, 1); renderTab(activeTab); updateDirty(); };
+      aact.appendChild(arm);
+      ah.appendChild(aact);
+      ac.appendChild(ah);
+      ac.appendChild(bilingualField('回复内容', line, 'zh', 'textarea'));
+      ansWrap.appendChild(ac);
+    });
+    card.appendChild(ansWrap);
+    topicSec.appendChild(card);
+  });
+  root.appendChild(topicSec);
+}
+
+function renderJsonTab(root) {
+  const sec = section('原始 JSON (改完点下面 应用变更)');
+  const ta = document.createElement('textarea');
+  ta.className = 'textarea';
+  ta.style.minHeight = '500px';
+  ta.style.fontFamily = 'ui-monospace, SF Mono, Menlo, monospace';
+  ta.style.fontSize = '12px';
+  ta.value = JSON.stringify(content, null, 2);
+  sec.appendChild(ta);
+
+  const btn = document.createElement('button');
+  btn.className = 'btn'; btn.textContent = '应用 JSON 变更';
+  btn.style.marginTop = '12px';
+  btn.onclick = () => {
+    try {
+      const parsed = JSON.parse(ta.value);
+      content = parsed;
+      updateDirty();
+      showToast('已应用,记得点保存并发布');
+    } catch (e) {
+      showToast('JSON 格式错误: ' + e.message, 'err');
+    }
+  };
+  sec.appendChild(btn);
+  root.appendChild(sec);
+}
+
+/* 离开页面提醒 */
+window.addEventListener('beforeunload', e => {
+  if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
+});
+
+setInterval(updateDirty, 600);
+</script>
+</body>
+</html>
