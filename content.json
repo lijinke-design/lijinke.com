@@ -101,7 +101,7 @@
       { "type": "wechat", "label": "WeChat",      "val": "Kim-13268374345",         "href": "#",                                                       "copy": "Kim-13268374345" },
       { "type": "github", "label": "GitHub",      "val": "@lijinke-design",         "href": "https://github.com/lijinke-design",                       "copy": "" },
       { "type": "x",      "label": "X / Twitter", "val": "@Kim1620395687",          "href": "https://x.com/Kim1620395687",                             "copy": "" },
-      { "type": "zhihu",  "label": "知乎",         "val": "@Kim",                    "href": "https://www.zhihu.com/people/YOUR_ZHIHU_ID",              "copy": "" },
+      { "type": "zhihu",  "label": "知乎",         "val": "@Kim",                    "href": "https://www.zhihu.com/people/43-33-75-5",                "copy": "" },
       { "type": "phone",  "label": "Phone",       "val": "+86 132 6837 4345",       "href": "tel:+8613268374345",                                      "copy": "+86 13268374345" }
     ]
   },
