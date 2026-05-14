@@ -4,6 +4,41 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kim · AI Product Builder</title>
+
+<!-- SEO -->
+<meta name="description" content="Kim — 资深 AI 产品经理，专注 LLM 应用 · Agent 工作流 · 产品 0→1。7 年互联网大厂 AI 产品经验，Open to Collab。" />
+<meta name="keywords" content="AI产品经理,LLM,Agent,AI Native,产品经理,Kim" />
+<link rel="canonical" href="https://lijinke.com/" />
+
+<!-- Open Graph / 微信/朋友圈分享 -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://lijinke.com/" />
+<meta property="og:title" content="Kim · AI Product Builder" />
+<meta property="og:description" content="资深 AI 产品经理，专注 LLM 应用 · Agent 工作流 · 产品 0→1。7 年互联网大厂经验，Open to Collab。" />
+<meta property="og:image" content="https://lijinke.com/assets/og-cover.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="zh_CN" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@Kim1620395687" />
+<meta name="twitter:title" content="Kim · AI Product Builder" />
+<meta name="twitter:description" content="Senior AI PM · LLM Apps · Agent Workflow · 0→1. Open to Collab." />
+<meta name="twitter:image" content="https://lijinke.com/assets/og-cover.png" />
+
+<!-- 关键资源预加载 -->
+<link rel="preload" as="image" href="assets/character.webp" type="image/webp" />
+<link rel="preload" as="fetch" href="content.json" crossorigin />
+
+<!-- Favicon -->
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+<!-- Inter 字体 -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
 <style>
   :root {
     --bg-deep: #050010;
@@ -1136,7 +1171,10 @@
 <!-- ============ 人物形象 + 对话气泡 ============ -->
 <div class="character-wrap" id="characterWrap">
   <div class="character" id="character">
-    <img src="assets/character.png?v=2" alt="Kim" />
+    <picture>
+      <source srcset="assets/character.webp" type="image/webp" />
+      <img src="assets/character.png?v=2" alt="Kim" />
+    </picture>
   </div>
 </div>
 
@@ -1625,7 +1663,8 @@
 
   async function loadContent() {
     try {
-      const r = await fetch('content.json?t=' + Date.now());
+      // cache:'no-cache' 让浏览器每次检查是否更新，但命中 304 时不重传内容
+      const r = await fetch('content.json', { cache: 'no-cache' });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       window.content = await r.json();
       renderFromContent();
