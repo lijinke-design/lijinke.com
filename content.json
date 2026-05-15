@@ -100,7 +100,6 @@
       { "type": "email",  "label": "Email",       "val": "hi@lijinke.com",          "href": "mailto:hi@lijinke.com",                                  "copy": "hi@lijinke.com" },
       { "type": "wechat", "label": "WeChat",      "val": "Kim-13268374345",         "href": "#",                                                       "copy": "Kim-13268374345" },
       { "type": "github", "label": "GitHub",      "val": "@lijinke-design",         "href": "https://github.com/lijinke-design",                       "copy": "" },
-      { "type": "x",      "label": "X / Twitter", "val": "@Kim1620395687",          "href": "https://x.com/Kim1620395687",                             "copy": "" },
       { "type": "zhihu",  "label": "知乎",         "val": "@Kim",                    "href": "https://www.zhihu.com/people/43-33-75-5",                "copy": "" },
       { "type": "phone",  "label": "Phone",       "val": "+86 132 6837 4345",       "href": "tel:+8613268374345",                                      "copy": "+86 13268374345" }
     ]
@@ -148,7 +147,7 @@
         "a": [
           { "zh": "右下角图标随你挑：", "en": "Pick any icon below:" },
           { "zh": "· ✉️ Email · 💬 微信 (Kim-13268374345)", "en": "· ✉️ Email · 💬 WeChat (Kim-13268374345)" },
-          { "zh": "· 🐙 GitHub · 𝕏 @Kim1620395687 · 知乎", "en": "· 🐙 GitHub · 𝕏 @Kim1620395687 · Zhihu" },
+          { "zh": "· 🐙 GitHub · 知乎", "en": "· 🐙 GitHub · Zhihu" },
           { "zh": "邮箱最稳，微信最快。", "en": "Email is most reliable, WeChat is fastest." }
         ]
       },
