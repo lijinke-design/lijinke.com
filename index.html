@@ -22,7 +22,6 @@
 
 
 <!-- 关键资源预加载 -->
-<link rel="preload" as="image" href="assets/character.webp" type="image/webp" />
 <link rel="preload" as="fetch" href="content.json" crossorigin />
 
 <!-- Favicon -->
@@ -480,37 +479,12 @@
     height: 56vh;
     max-height: 620px;
     z-index: 8;
-    pointer-events: none;
-    perspective: 1200px;
-    transform-style: preserve-3d;
+    pointer-events: auto;
   }
 
   .character {
     width: 100%;
     height: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform;
-    animation: breathe 5s ease-in-out infinite, sway 7s ease-in-out infinite;
-    filter: drop-shadow(-20px 30px 40px rgba(124, 58, 237, 0.5));
-  }
-
-  @keyframes breathe {
-    0%, 100% { transform: scale(1) translateY(0); }
-    50%      { transform: scale(1.012) translateY(-3px); }
-  }
-
-  @keyframes sway {
-    0%, 100% { filter: drop-shadow(-20px 30px 40px rgba(124, 58, 237, 0.5)); }
-    50%      { filter: drop-shadow(-25px 30px 50px rgba(217, 70, 239, 0.5)); }
-  }
-
-  .character img {
-    height: 100%;
-    width: 100%;
-    object-fit: contain;
-    object-position: center bottom;
-    -webkit-user-drag: none;
   }
 
   /* 脚下光斑 */
@@ -1062,8 +1036,8 @@
   /* ============ 响应式 ============ */
   @media (max-width: 1100px) {
     .character-wrap {
-      width: 220px;
-      height: 42vh;
+      width: 240px;
+      height: 44vh;
       right: 16px;
     }
   }
@@ -1087,11 +1061,6 @@
       background: radial-gradient(circle at center, rgba(168, 85, 247, 0.25), rgba(13, 4, 40, 0.6));
       border: 2px solid rgba(192, 132, 252, 0.5);
       box-shadow: 0 10px 40px rgba(168, 85, 247, 0.5);
-    }
-    .character img {
-      height: 380%;
-      width: auto;
-      object-position: 50% 5%;
     }
     .character-wrap::after { display: none; }
 
@@ -1166,12 +1135,7 @@
 
 <!-- ============ 人物形象 + 对话气泡 ============ -->
 <div class="character-wrap" id="characterWrap">
-  <div class="character" id="character">
-    <picture>
-      <source srcset="assets/character.webp" type="image/webp" />
-      <img src="assets/character.png?v=2" alt="Kim" />
-    </picture>
-  </div>
+  <div class="character" id="character"></div>
 </div>
 
 <div class="bubble" id="bubble" data-hover>
@@ -1372,10 +1336,12 @@
   });
 
   function animateCharacter() {
-    cx += (tcx - cx) * 0.08;
-    cy += (tcy - cy) * 0.08;
-    // rotateY 左右转, rotateX 上下点头, translateZ 制造立体感
-    characterWrap.style.transform = `rotateY(${cx * 8}deg) rotateX(${cy * -4}deg)`;
+    // CSS 3D transform disabled when Three.js character is active
+    if (!window.char3dActive) {
+      cx += (tcx - cx) * 0.08;
+      cy += (tcy - cy) * 0.08;
+      characterWrap.style.transform = `rotateY(${cx * 8}deg) rotateX(${cy * -4}deg)`;
+    }
     requestAnimationFrame(animateCharacter);
   }
   animateCharacter();
@@ -1669,8 +1635,7 @@
   function renderFromContent() {
     if (!window.content) return;
     if (window.content.site?.title) document.title = window.content.site.title;
-    const charImg = document.querySelector('#character img');
-    if (charImg && window.content.site?.characterImage) charImg.src = window.content.site.characterImage;
+    // character image replaced by Three.js canvas — no img to update
     const chatName = document.getElementById('chatName');
     if (chatName && window.content.chat?.name) chatName.textContent = window.content.chat.name;
     renderNavLinks();
@@ -1779,5 +1744,8 @@
   to   { opacity:1; transform:scale(1) translateY(0); }
 }
 </style>
+
+<!-- 3D anime character (loads Three.js + builds scene) -->
+<script src="assets/character3d.js" defer></script>
 </body>
 </html>
