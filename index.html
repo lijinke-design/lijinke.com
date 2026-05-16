@@ -1427,19 +1427,11 @@
     const m = document.getElementById('wechatModal');
     m.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    // 弹窗打开时显示原生光标（backdrop-filter 合成层会盖住自定义光标）
-    document.body.style.cursor = 'auto';
-    document.getElementById('cursorDot').style.display = 'none';
-    document.getElementById('cursorRing').style.display = 'none';
   }
   function closeWechatModal() {
     const m = document.getElementById('wechatModal');
     m.style.display = 'none';
     document.body.style.overflow = '';
-    // 恢复自定义光标
-    document.body.style.cursor = '';
-    document.getElementById('cursorDot').style.display = '';
-    document.getElementById('cursorRing').style.display = '';
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWechatModal(); });
 
@@ -1746,11 +1738,13 @@
 <!-- 微信二维码弹窗 -->
 <div id="wechatModal" style="
   display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(5,0,16,0.85); backdrop-filter:blur(12px);
+  background:rgba(5,0,16,0.82);
   align-items:center; justify-content:center;
 " onclick="if(event.target===this)closeWechatModal()">
   <div style="
     background:linear-gradient(145deg,rgba(30,15,60,0.98),rgba(20,8,45,0.98));
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
     border:1px solid rgba(192,132,252,0.3);
     border-radius:24px;
     padding:36px 40px 32px;
