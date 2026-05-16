@@ -98,7 +98,7 @@
     "lead":    { "zh": "欢迎来聊 AI 产品共创、LLM 应用落地、内容共建。邮件最稳，微信最快。", "en": "Always open for AI product co-creation, LLM application landing, and content collaboration. Email is the most reliable; WeChat the fastest." },
     "methods": [
       { "type": "email",  "label": "Email",       "val": "hi@lijinke.com",          "href": "mailto:hi@lijinke.com",                                  "copy": "hi@lijinke.com" },
-      { "type": "wechat", "label": "WeChat",      "val": "Kim-13268374345",         "href": "#",                                                       "copy": "Kim-13268374345" },
+      { "type": "wechat", "label": "WeChat",      "val": "扫码添加",                "href": "#",                                                       "copy": "" },
       { "type": "github", "label": "GitHub",      "val": "@lijinke-design",         "href": "https://github.com/lijinke-design",                       "copy": "" },
       { "type": "zhihu",  "label": "知乎",         "val": "@Kim",                    "href": "https://www.zhihu.com/people/43-33-75-5",                "copy": "" },
       { "type": "phone",  "label": "Phone",       "val": "+86 132 6837 4345",       "href": "tel:+8613268374345",                                      "copy": "+86 13268374345" }

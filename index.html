@@ -1294,9 +1294,9 @@
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
         <div><div class="lbl">Email</div><div class="val">hi@lijinke.com</div></div>
       </a>
-      <a class="contact-card" href="#" data-copy="Kim-13268374345" data-hover>
+      <a class="contact-card" href="#" data-wechat-qr data-hover>
         <div class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 4C4.91 4 2 6.46 2 9.5c0 1.69.9 3.2 2.31 4.2L3.5 16l2.5-1.3c.79.2 1.63.3 2.5.3l.6-.02A5.5 5.5 0 0 1 14.5 9c.5 0 1 .05 1.46.14C15.3 6.21 12.21 4 8.5 4zM6.5 8.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM22 14.5c0-2.49-2.47-4.5-5.5-4.5S11 12.01 11 14.5c0 2.5 2.47 4.5 5.5 4.5.65 0 1.27-.09 1.86-.26L20 19.7l-.6-1.5A4.46 4.46 0 0 0 22 14.5z"/></svg></div>
-        <div><div class="lbl">WeChat</div><div class="val">Kim-13268374345</div></div>
+        <div><div class="lbl">WeChat</div><div class="val">扫码添加</div></div>
       </a>
       <a class="contact-card" href="https://github.com/lijinke-design" target="_blank" rel="noopener" data-hover>
         <div class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.22c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.36-3.37-1.36-.45-1.18-1.11-1.49-1.11-1.49-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.55-1.13-4.55-5.03 0-1.11.39-2.02 1.03-2.73-.1-.26-.45-1.3.1-2.7 0 0 .84-.27 2.75 1.04A9.38 9.38 0 0 1 12 6.85c.85 0 1.71.12 2.51.34 1.91-1.31 2.75-1.04 2.75-1.04.55 1.4.2 2.44.1 2.7.64.71 1.03 1.62 1.03 2.73 0 3.91-2.34 4.77-4.57 5.02.36.31.68.93.68 1.88v2.78c0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.22C22 6.58 17.52 2 12 2z"/></svg></div>
@@ -1415,6 +1415,24 @@
     msgs.scrollTop = msgs.scrollHeight;
   }
 
+  /* ============ 微信二维码弹窗 ============ */
+  function openWechatModal() {
+    const m = document.getElementById('wechatModal');
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeWechatModal() {
+    const m = document.getElementById('wechatModal');
+    m.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWechatModal(); });
+
+  document.body.addEventListener('click', e => {
+    const wc = e.target.closest('[data-wechat-qr]');
+    if (wc) { e.preventDefault(); openWechatModal(); return; }
+  });
+
   /* ============ 复制联系方式 (事件委托) ============ */
   const toast = document.getElementById('toast');
   document.body.addEventListener('click', e => {
@@ -1521,9 +1539,14 @@
     if (!box || !window.content?.contact?.methods) return;
     box.innerHTML = window.content.contact.methods.map(m => {
       const svg = ICONS[m.type] || '';
-      const copyAttr = m.copy ? `data-copy="${m.copy}"` : '';
       const href = m.href || '#';
       const target = href.startsWith('http') ? ' target="_blank" rel="noopener"' : '';
+      if (m.type === 'wechat') {
+        return `<a class="icon-link" href="#" data-wechat-qr data-hover>
+          ${svg}<span class="tooltip">WeChat · 扫码添加</span>
+        </a>`;
+      }
+      const copyAttr = m.copy ? `data-copy="${m.copy}"` : '';
       return `<a class="icon-link" href="${href}" ${copyAttr} data-hover${target}>
         ${svg}<span class="tooltip">${m.label}${m.val ? ' · ' + m.val : ''}</span>
       </a>`;
@@ -1588,9 +1611,15 @@
       <div class="contact-big">
         ${(c.methods||[]).map(m => {
           const svg = ICONS[m.type] || '';
-          const copyAttr = m.copy ? `data-copy="${m.copy}"` : '';
           const href = m.href || '#';
           const target = href.startsWith('http') ? ' target="_blank" rel="noopener"' : '';
+          if (m.type === 'wechat') {
+            return `<a class="contact-card" href="#" data-wechat-qr data-hover>
+              <div class="ci">${svg}</div>
+              <div><div class="lbl">WeChat</div><div class="val">扫码添加</div></div>
+            </a>`;
+          }
+          const copyAttr = m.copy ? `data-copy="${m.copy}"` : '';
           return `<a class="contact-card" href="${href}" ${copyAttr} data-hover${target}>
             <div class="ci">${svg}</div>
             <div><div class="lbl">${m.label}</div><div class="val">${m.val}</div></div>
@@ -1693,5 +1722,55 @@
     setTimeout(() => r.remove(), 700);
   });
 </script>
+
+<!-- 微信二维码弹窗 -->
+<div id="wechatModal" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(5,0,16,0.85); backdrop-filter:blur(12px);
+  align-items:center; justify-content:center;
+" onclick="if(event.target===this)closeWechatModal()">
+  <div style="
+    background:linear-gradient(145deg,rgba(30,15,60,0.98),rgba(20,8,45,0.98));
+    border:1px solid rgba(192,132,252,0.3);
+    border-radius:24px;
+    padding:36px 40px 32px;
+    text-align:center;
+    box-shadow:0 0 60px rgba(168,85,247,0.35), 0 24px 60px rgba(0,0,0,0.5);
+    max-width:320px; width:90%;
+    position:relative;
+    animation:qrIn 0.3s cubic-bezier(0.16,1,0.3,1);
+  ">
+    <!-- 关闭按钮 -->
+    <button onclick="closeWechatModal()" style="
+      position:absolute; top:14px; right:14px;
+      background:rgba(168,85,247,0.15); border:1px solid rgba(192,132,252,0.25);
+      color:rgba(192,132,252,0.8); border-radius:50%;
+      width:30px; height:30px; cursor:pointer; font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s;
+    " onmouseover="this.style.background='rgba(168,85,247,0.35)'" onmouseout="this.style.background='rgba(168,85,247,0.15)'">×</button>
+    <!-- 标题 -->
+    <div style="font-size:13px; color:rgba(192,132,252,0.7); letter-spacing:1px; margin-bottom:20px; text-transform:uppercase;">WeChat</div>
+    <!-- 二维码图片 -->
+    <div style="
+      background:#fff; border-radius:16px; padding:12px;
+      display:inline-block;
+      box-shadow:0 0 30px rgba(192,132,252,0.25);
+    ">
+      <img src="assets/wechat-qr.png" alt="WeChat QR" style="width:200px; height:200px; display:block; border-radius:8px;" />
+    </div>
+    <!-- 说明文字 -->
+    <p style="margin-top:20px; font-size:14px; color:rgba(244,240,255,0.85); line-height:1.6;">
+      微信扫一扫，添加我为朋友
+    </p>
+    <p style="margin-top:6px; font-size:12px; color:rgba(169,157,200,0.6);">Kim-13268374345</p>
+  </div>
+</div>
+<style>
+@keyframes qrIn {
+  from { opacity:0; transform:scale(0.85) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+</style>
 </body>
 </html>
