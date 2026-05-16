@@ -53,15 +53,37 @@
     /* ── MATERIALS ── */
     const M = {
       skin:   new THREE.MeshPhongMaterial({ color: 0xf5ccb0, shininess: 18 }),
-      hair:   new THREE.MeshPhongMaterial({ color: 0x24c4b5, shininess: 90,  specular: 0x88ffee }),
+      hair:   new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 75, specular: 0xffd5e5 }),
       coat:   new THREE.MeshPhongMaterial({ color: 0xbfcfdf, shininess: 110, specular: 0x99aacc }),
       inner:  new THREE.MeshPhongMaterial({ color: 0x180840 }),
-      goggle: new THREE.MeshPhongMaterial({ color: 0xf59e0b, shininess: 160, specular: 0xffe060 }),
-      lens:   new THREE.MeshPhongMaterial({ color: 0x88eeff, shininess: 220, transparent: true, opacity: 0.6 }),
+      frame:  new THREE.MeshPhongMaterial({ color: 0x14141c, shininess: 140, specular: 0x444466 }),
+      glass:  new THREE.MeshPhongMaterial({ color: 0xc8e0f0, shininess: 220, transparent: true, opacity: 0.18 }),
       pants:  new THREE.MeshPhongMaterial({ color: 0x140c38 }),
       shoe:   new THREE.MeshPhongMaterial({ color: 0x0c0c1a, shininess: 50 }),
       gold:   new THREE.MeshPhongMaterial({ color: 0xd4af37, shininess: 180, specular: 0xffee88 }),
     };
+
+    /* ── HAIR GRADIENT 渐变粉 (顶部稍深 → 发尾极浅) ── */
+    const HAIR_TOP_Y = 1.4;
+    const HAIR_BOT_Y = -0.6;
+    const HAIR_TOP_C = new THREE.Color(0xeea7c4);  // 顶部稍深粉
+    const HAIR_BOT_C = new THREE.Color(0xfde5ee);  // 底部极浅粉
+    function paintHairGradient(mesh) {
+      mesh.updateMatrix();
+      const geo = mesh.geometry;
+      const pos = geo.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      const v = new THREE.Vector3();
+      const c = new THREE.Color();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrix);
+        let t = (v.y - HAIR_BOT_Y) / (HAIR_TOP_Y - HAIR_BOT_Y);
+        if (t < 0) t = 0; if (t > 1) t = 1;
+        c.copy(HAIR_BOT_C).lerp(HAIR_TOP_C, t);
+        colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    }
 
     /* ── FACE CANVAS TEXTURE ── */
     function drawAnimeEye(g, cx, cy, smiling, isRight) {
@@ -86,11 +108,11 @@
       g.fillStyle = '#ffffff';
       g.beginPath(); g.ellipse(cx, cy, R, R * 0.8, 0, 0, Math.PI * 2); g.fill();
 
-      // iris gradient
+      // iris gradient (emerald 翠绿)
       const ig = g.createRadialGradient(cx - 8, cy - 8, 3, cx, cy + 4, R * 0.68);
-      ig.addColorStop(0,   '#62f0e0');
-      ig.addColorStop(0.5, '#18b8a8');
-      ig.addColorStop(1,   '#0a7070');
+      ig.addColorStop(0,   '#7af0a0');
+      ig.addColorStop(0.5, '#1ea04a');
+      ig.addColorStop(1,   '#0a5a28');
       g.fillStyle = ig;
       g.beginPath(); g.ellipse(cx, cy + 5, R * 0.65, R * 0.65, 0, 0, Math.PI * 2); g.fill();
 
@@ -236,18 +258,21 @@
     // Hair - main top mass
     const hairTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.62, 1.1), M.hair);
     hairTop.position.y = 0.66;
+    paintHairGradient(hairTop);
     headGrp.add(hairTop);
 
     // Hair - sides
     [-1, 1].forEach(s => {
       const sh = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.96, 0.96), M.hair);
       sh.position.set(s * 0.66, 0.05, 0);
+      paintHairGradient(sh);
       headGrp.add(sh);
     });
 
     // Hair - back flap
     const hairBack = new THREE.Mesh(new THREE.BoxGeometry(1.08, 1.2, 0.28), M.hair);
     hairBack.position.set(0, 0.08, -0.62);
+    paintHairGradient(hairBack);
     headGrp.add(hairBack);
 
     // Spikes
@@ -261,6 +286,7 @@
       const spike = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.44, 6), M.hair);
       spike.position.set(x, y, z);
       spike.rotation.set(rx, ry, rz);
+      paintHairGradient(spike);
       headGrp.add(spike);
     });
 
@@ -268,31 +294,31 @@
     const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.55, 0.2), M.hair);
     fringe.position.set(0.2, 0.36, 0.56);
     fringe.rotation.z = -0.12;
+    paintHairGradient(fringe);
     headGrp.add(fringe);
 
-    // Goggles (forehead)
-    const gogGrp = new THREE.Group();
-    gogGrp.position.set(0, 0.37, 0.53);
-    headGrp.add(gogGrp);
+    // Glasses (black-frame at eye level)
+    const glassGrp = new THREE.Group();
+    glassGrp.position.set(0, 0.06, 0.5);
+    headGrp.add(glassGrp);
 
-    gogGrp.add(new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.19, 0.09), M.goggle)); // strap
-
-    [-0.28, 0.28].forEach(ox => {
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.11, 16), M.lens);
+    [-0.27, 0.27].forEach(ox => {
+      // Lens (subtle glass)
+      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.04, 20), M.glass);
       lens.rotation.x = Math.PI / 2;
       lens.position.set(ox, 0, 0.04);
-      gogGrp.add(lens);
+      glassGrp.add(lens);
 
-      const rim2 = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.036, 8, 16), M.goggle);
-      rim2.rotation.x = Math.PI / 2;
-      rim2.position.set(ox, 0, 0.05);
-      gogGrp.add(rim2);
+      // Frame ring (black)
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.022, 12, 26), M.frame);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(ox, 0, 0.06);
+      glassGrp.add(ring);
     });
-    // bridge between lenses
-    gogGrp.add(Object.assign(
-      new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.08, 0.09), M.goggle),
-      { position: new THREE.Vector3(0, 0, 0) }
-    ));
+    // Bridge between lenses
+    const gBridge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.025, 0.035), M.frame);
+    gBridge.position.set(0, 0.025, 0.06);
+    glassGrp.add(gBridge);
 
     /* ── NECK ── */
     const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.24, 0.36, 8), M.skin);
@@ -350,9 +376,9 @@
         { position: new THREE.Vector3(0, -0.39, 0) }
       ));
 
-      // cuff
+      // cuff (袖口罗纹 - 深色)
       fGrp.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.11, 8), M.goggle),
+        new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.11, 8), M.inner),
         { position: new THREE.Vector3(0, -0.64, 0) }
       ));
 
@@ -482,14 +508,35 @@
     });
   }
 
-  // Load Three.js if not already present, then init
-  if (window.THREE) {
-    init();
-  } else {
+  /* ── Three.js loader with CDN fallback + fallback to static image on failure ── */
+  function loadThree(urls, idx, onDone, onFail) {
+    if (idx >= urls.length) { onFail(); return; }
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
-    s.onload  = init;
-    s.onerror = () => console.warn('[character3d] Three.js failed to load');
+    s.src = urls[idx];
+    s.onload  = () => { console.log('[character3d] Three.js loaded from', urls[idx]); onDone(); };
+    s.onerror = () => { console.warn('[character3d] CDN failed:', urls[idx]); loadThree(urls, idx + 1, onDone, onFail); };
     document.head.appendChild(s);
+  }
+
+  function safeInit() {
+    try { init(); console.log('[character3d] scene built ✓'); }
+    catch (e) { console.error('[character3d] init error:', e); showFallbackImage(); }
+  }
+
+  function showFallbackImage() {
+    const c = document.getElementById('character');
+    if (!c) return;
+    c.innerHTML = '<picture><source srcset="assets/character.webp" type="image/webp"/><img src="assets/character.png" alt="Kim" style="height:100%;width:100%;object-fit:contain;object-position:center bottom;"/></picture>';
+    console.warn('[character3d] using fallback static image');
+  }
+
+  if (window.THREE) {
+    safeInit();
+  } else {
+    loadThree([
+      'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
+      'https://unpkg.com/three@0.160.0/build/three.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js'
+    ], 0, safeInit, showFallbackImage);
   }
 })();
