@@ -524,10 +524,11 @@
   }
 
   function showFallbackImage() {
-    const c = document.getElementById('character');
-    if (!c) return;
-    c.innerHTML = '<picture><source srcset="assets/character.webp" type="image/webp"/><img src="assets/character.png" alt="Kim" style="height:100%;width:100%;object-fit:contain;object-position:center bottom;"/></picture>';
-    console.warn('[character3d] using fallback static image');
+    // DO NOT load the old static image (user explicitly rejected it).
+    // Silently hide and surface the error in the console for debugging.
+    const wrap = document.getElementById('characterWrap');
+    if (wrap) wrap.style.display = 'none';
+    console.error('[character3d] Three.js could not initialize. Character hidden. Check above logs for the underlying failure (CDN block / WebGL / runtime error).');
   }
 
   if (window.THREE) {
