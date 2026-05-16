@@ -417,6 +417,13 @@
     backdrop-filter: blur(10px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
+    outline: none;
+  }
+
+  .icon-link:focus, .icon-link:focus-visible,
+  .contact-card:focus, .contact-card:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 
   .icon-link::before {
@@ -1420,17 +1427,30 @@
     const m = document.getElementById('wechatModal');
     m.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    // 弹窗打开时显示原生光标（backdrop-filter 合成层会盖住自定义光标）
+    document.body.style.cursor = 'auto';
+    document.getElementById('cursorDot').style.display = 'none';
+    document.getElementById('cursorRing').style.display = 'none';
   }
   function closeWechatModal() {
     const m = document.getElementById('wechatModal');
     m.style.display = 'none';
     document.body.style.overflow = '';
+    // 恢复自定义光标
+    document.body.style.cursor = '';
+    document.getElementById('cursorDot').style.display = '';
+    document.getElementById('cursorRing').style.display = '';
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWechatModal(); });
 
   document.body.addEventListener('click', e => {
     const wc = e.target.closest('[data-wechat-qr]');
-    if (wc) { e.preventDefault(); openWechatModal(); return; }
+    if (wc) {
+      e.preventDefault();
+      wc.blur(); // 消除 focus 光圈
+      openWechatModal();
+      return;
+    }
   });
 
   /* ============ 复制联系方式 (事件委托) ============ */
