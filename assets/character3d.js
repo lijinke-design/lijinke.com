@@ -361,26 +361,23 @@
       root.add(grp);
 
       // upper arm
-      grp.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.20, 0.9, 8), M.coat),
-        { position: new THREE.Vector3(0, -0.45, 0) }
-      ));
+      const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.20, 0.9, 8), M.coat);
+      upperArm.position.set(0, -0.45, 0);
+      grp.add(upperArm);
 
       // forearm sub-group (elbow pivot)
       const fGrp = new THREE.Group();
       fGrp.position.y = -0.9;
       grp.add(fGrp);
 
-      fGrp.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.17, 0.78, 8), M.coat),
-        { position: new THREE.Vector3(0, -0.39, 0) }
-      ));
+      const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.17, 0.78, 8), M.coat);
+      lowerArm.position.set(0, -0.39, 0);
+      fGrp.add(lowerArm);
 
       // cuff (袖口罗纹 - 深色)
-      fGrp.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.11, 8), M.inner),
-        { position: new THREE.Vector3(0, -0.64, 0) }
-      ));
+      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.11, 8), M.inner);
+      cuff.position.set(0, -0.64, 0);
+      fGrp.add(cuff);
 
       const hand = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), M.skin);
       hand.scale.set(1, 0.82, 1);
@@ -400,14 +397,13 @@
       lg.position.set(ox, 1.12, 0);
       root.add(lg);
 
-      lg.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 1.08, 8), M.pants),
-        { position: new THREE.Vector3(0, -0.54, 0) }
-      ));
-      lg.add(Object.assign(
-        new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.18, 0.96, 8), M.pants),
-        { position: new THREE.Vector3(0, -1.54, 0) }
-      ));
+      const upLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 1.08, 8), M.pants);
+      upLeg.position.set(0, -0.54, 0);
+      lg.add(upLeg);
+
+      const loLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.18, 0.96, 8), M.pants);
+      loLeg.position.set(0, -1.54, 0);
+      lg.add(loLeg);
 
       // boot
       const boot = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28, 0.62), M.shoe);
