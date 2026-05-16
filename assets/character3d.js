@@ -70,12 +70,17 @@ window.char3dActive = true;
     const root = new THREE.Group();
     scene.add(root);
 
-    /* ── DEBUG: axes helper — should always be visible regardless of model ── */
-    const axes = new THREE.AxesHelper(1.5);
+    /* ── DEBUG: axes + test cube — visible BEFORE the model loads ── */
+    const axes = new THREE.AxesHelper(1.0);
     scene.add(axes);
-    // Temporary camera while model loads so axes are visible
-    camera.position.set(2, 2, 4);
-    camera.lookAt(0, 0.5, 0);
+    const testCube = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4, 0.4, 0.4),
+      new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true })
+    );
+    scene.add(testCube);
+    // Temporary camera while model loads so cube + axes are visible
+    camera.position.set(1.5, 1.5, 3);
+    camera.lookAt(0, 0, 0);
 
     /* ── STATE ── */
     let mixer = null;
@@ -103,10 +108,8 @@ window.char3dActive = true;
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        // Center horizontally, drop feet to y=0
-        model.position.x -= center.x;
-        model.position.z -= center.z;
-        model.position.y -= box.min.y;
+        // Center model at world origin (cleaner framing math)
+        model.position.sub(center);
         root.add(model);
 
         // Animation mixer
@@ -133,27 +136,34 @@ window.char3dActive = true;
           }
         });
 
-        // Camera framing
+        // Simple, robust camera framing: fit largest dimension with margin
         const fov = camera.fov * Math.PI / 180;
+        const maxDim = Math.max(size.x, size.y);
+        const aspect = camera.aspect;
+        // Account for aspect ratio when fitting horizontally
+        const fitDist = (size.y * 0.55) / Math.tan(fov / 2);
+        const fitDistX = (size.x * 0.55) / (Math.tan(fov / 2) * aspect);
+        const dist = Math.max(fitDist, fitDistX);
+
         if (isMobile) {
-          // Head only — circular crop on mobile
-          const headY = size.y * 0.92;
-          const headRadius = size.y * 0.18;
-          const dist = (headRadius * 2.2) / Math.tan(fov / 2);
-          camera.position.set(0, headY, dist);
-          camera.lookAt(0, headY, 0);
+          // Mobile circle: aim a bit higher to favor face/upper body
+          const yLook = size.y * 0.20;
+          camera.position.set(0, yLook, dist * 0.85);
+          camera.lookAt(0, yLook, 0);
         } else {
-          // Full body
-          const centerY = size.y * 0.50;
-          const dist = (size.y * 0.62) / Math.tan(fov / 2);
-          camera.position.set(0, centerY + size.y * 0.04, dist);
-          camera.lookAt(0, centerY, 0);
+          camera.position.set(0, 0, dist);
+          camera.lookAt(0, 0, 0);
         }
+        // Remove the placeholder axes/cube once model is ready
+        scene.remove(axes);
+        scene.remove(testCube);
 
         modelReady = true;
         console.log('[character3d] model ready', {
           url: MODEL_URL,
-          size: size.toArray().map(v => +v.toFixed(2)),
+          size_xyz: [+size.x.toFixed(2), +size.y.toFixed(2), +size.z.toFixed(2)],
+          dist: +dist.toFixed(2),
+          camera: camera.position.toArray().map(v => +v.toFixed(2)),
           animations: gltf.animations.map(a => a.name)
         });
       },
