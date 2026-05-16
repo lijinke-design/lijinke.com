@@ -28,8 +28,17 @@ window.char3dActive = true;
     }
 
     const isMobile = window.innerWidth < 900;
-    const W = container.offsetWidth  || (isMobile ? 130 : 320);
-    const H = container.offsetHeight || (isMobile ? 130 : 500);
+    // Use the WRAP rect (not container) — container hasn't been laid out yet on first paint
+    const wrapRect = wrap?.getBoundingClientRect();
+    const W = (wrapRect?.width  | 0) || container.offsetWidth  || (isMobile ? 130 : 320);
+    const H = (wrapRect?.height | 0) || container.offsetHeight || (isMobile ? 130 : 500);
+    console.log('[character3d] init dims', {
+      wrapRect: wrapRect ? [wrapRect.x|0, wrapRect.y|0, wrapRect.width|0, wrapRect.height|0] : null,
+      container: [container.offsetWidth, container.offsetHeight],
+      computed: [W, H],
+      isMobile,
+      innerWidth: window.innerWidth
+    });
 
     /* ── SCENE / CAMERA / RENDERER ── */
     const scene = new THREE.Scene();
@@ -60,6 +69,13 @@ window.char3dActive = true;
     /* ── ROOT GROUP (we apply idle float + mouse parallax to this) ── */
     const root = new THREE.Group();
     scene.add(root);
+
+    /* ── DEBUG: axes helper — should always be visible regardless of model ── */
+    const axes = new THREE.AxesHelper(1.5);
+    scene.add(axes);
+    // Temporary camera while model loads so axes are visible
+    camera.position.set(2, 2, 4);
+    camera.lookAt(0, 0.5, 0);
 
     /* ── STATE ── */
     let mixer = null;
@@ -196,15 +212,22 @@ window.char3dActive = true;
     }
     tick();
 
-    window.addEventListener('resize', () => {
-      const nW = container.offsetWidth;
-      const nH = container.offsetHeight;
+    function resize() {
+      const r = wrap?.getBoundingClientRect();
+      const nW = (r?.width | 0) || container.offsetWidth;
+      const nH = (r?.height | 0) || container.offsetHeight;
       if (nW && nH) {
         camera.aspect = nW / nH;
         camera.updateProjectionMatrix();
         renderer.setSize(nW, nH);
+        console.log('[character3d] resized canvas to', nW, 'x', nH);
       }
-    });
+    }
+    window.addEventListener('resize', resize);
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap || container);
+    // Trigger an extra resize after layout has settled
+    requestAnimationFrame(resize);
+    setTimeout(resize, 300);
   }
 
   function showFallback() {
