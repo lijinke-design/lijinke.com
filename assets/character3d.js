@@ -154,17 +154,37 @@ window.char3dActive = true;
           camera.position.set(0, 0, dist);
           camera.lookAt(0, 0, 0);
         }
-        // Remove the placeholder axes/cube once model is ready
-        scene.remove(axes);
-        scene.remove(testCube);
+        // Keep axes + cube as anchors so we can compare positions
+        axes.scale.setScalar(Math.max(size.y * 0.6, 0.3));
+        testCube.position.set(size.x * 0.7 + 0.2, 0, 0);
+        testCube.scale.setScalar(size.y * 0.15);
+
+        // Probe: solid red cube at world origin (model center, MeshBasic = not light-dependent)
+        const probe = new THREE.Mesh(
+          new THREE.BoxGeometry(0.2, 0.2, 0.2),
+          new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
+        probe.scale.setScalar(size.y);
+        scene.add(probe);
+
+        // Verify the model is in the scene tree
+        let meshCount = 0, hasSkinnedMesh = false;
+        model.traverse(o => {
+          if (o.isMesh) meshCount++;
+          if (o.isSkinnedMesh) hasSkinnedMesh = true;
+        });
 
         modelReady = true;
         console.log('[character3d] model ready', {
           url: MODEL_URL,
           size_xyz: [+size.x.toFixed(2), +size.y.toFixed(2), +size.z.toFixed(2)],
+          center_xyz: [+center.x.toFixed(2), +center.y.toFixed(2), +center.z.toFixed(2)],
           dist: +dist.toFixed(2),
           camera: camera.position.toArray().map(v => +v.toFixed(2)),
-          animations: gltf.animations.map(a => a.name)
+          meshCount,
+          hasSkinnedMesh,
+          animations: gltf.animations.map(a => a.name),
+          modelVisible: model.visible
         });
       },
       xhr => {
