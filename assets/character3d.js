@@ -103,12 +103,20 @@ window.char3dActive = true;
           }
         });
 
-        // Auto-fit camera using bounding box
+        // Initial bbox (may be inflated by skeleton bones on SkinnedMesh)
+        const rawBox = new THREE.Box3().setFromObject(model);
+        const rawSize = rawBox.getSize(new THREE.Vector3());
+
+        // Force-fit the model into a known 2-unit cube so framing is predictable
+        // regardless of the source model's units / bone layout
+        const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z) || 1;
+        const fitScale = 2.0 / maxDim;
+        model.scale.setScalar(fitScale);
+
+        // Recompute bbox AFTER scaling and use it to center on world origin
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
-
-        // Center model at world origin (cleaner framing math)
         model.position.sub(center);
         root.add(model);
 
@@ -136,38 +144,20 @@ window.char3dActive = true;
           }
         });
 
-        // Simple, robust camera framing: fit largest dimension with margin
-        const fov = camera.fov * Math.PI / 180;
-        const maxDim = Math.max(size.x, size.y);
-        const aspect = camera.aspect;
-        // Account for aspect ratio when fitting horizontally
-        const fitDist = (size.y * 0.55) / Math.tan(fov / 2);
-        const fitDistX = (size.x * 0.55) / (Math.tan(fov / 2) * aspect);
-        const dist = Math.max(fitDist, fitDistX);
-
+        // Fixed safe camera framing (model is now guaranteed to fit in a 2-unit cube)
         if (isMobile) {
-          // Mobile circle: aim a bit higher to favor face/upper body
-          const yLook = size.y * 0.20;
-          camera.position.set(0, yLook, dist * 0.85);
-          camera.lookAt(0, yLook, 0);
+          // Slightly tighter zoom and aim higher to favor face/upper body in circle crop
+          camera.position.set(0, 0.4, 2.6);
+          camera.lookAt(0, 0.4, 0);
         } else {
-          camera.position.set(0, 0, dist);
+          camera.position.set(0, 0, 3.2);
           camera.lookAt(0, 0, 0);
         }
-        // Keep axes + cube as anchors so we can compare positions
-        axes.scale.setScalar(Math.max(size.y * 0.6, 0.3));
-        testCube.position.set(size.x * 0.7 + 0.2, 0, 0);
-        testCube.scale.setScalar(size.y * 0.15);
 
-        // Probe: solid red cube at world origin (model center, MeshBasic = not light-dependent)
-        const probe = new THREE.Mesh(
-          new THREE.BoxGeometry(0.2, 0.2, 0.2),
-          new THREE.MeshBasicMaterial({ color: 0xff0000 })
-        );
-        probe.scale.setScalar(size.y);
-        scene.add(probe);
+        // Remove debug probes — model framing is now reliable
+        scene.remove(axes);
+        scene.remove(testCube);
 
-        // Verify the model is in the scene tree
         let meshCount = 0, hasSkinnedMesh = false;
         model.traverse(o => {
           if (o.isMesh) meshCount++;
@@ -177,14 +167,13 @@ window.char3dActive = true;
         modelReady = true;
         console.log('[character3d] model ready', {
           url: MODEL_URL,
-          size_xyz: [+size.x.toFixed(2), +size.y.toFixed(2), +size.z.toFixed(2)],
-          center_xyz: [+center.x.toFixed(2), +center.y.toFixed(2), +center.z.toFixed(2)],
-          dist: +dist.toFixed(2),
+          rawSize_xyz: [+rawSize.x.toFixed(2), +rawSize.y.toFixed(2), +rawSize.z.toFixed(2)],
+          fitScale: +fitScale.toFixed(4),
+          finalSize_xyz: [+size.x.toFixed(2), +size.y.toFixed(2), +size.z.toFixed(2)],
+          finalCenter: [+center.x.toFixed(2), +center.y.toFixed(2), +center.z.toFixed(2)],
           camera: camera.position.toArray().map(v => +v.toFixed(2)),
-          meshCount,
-          hasSkinnedMesh,
-          animations: gltf.animations.map(a => a.name),
-          modelVisible: model.visible
+          meshCount, hasSkinnedMesh,
+          animations: gltf.animations.map(a => a.name)
         });
       },
       xhr => {
