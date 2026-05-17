@@ -70,16 +70,8 @@ window.char3dActive = true;
     const root = new THREE.Group();
     scene.add(root);
 
-    /* ── DEBUG: axes + test cube — visible BEFORE the model loads ── */
-    const axes = new THREE.AxesHelper(1.0);
-    scene.add(axes);
-    const testCube = new THREE.Mesh(
-      new THREE.BoxGeometry(0.4, 0.4, 0.4),
-      new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true })
-    );
-    scene.add(testCube);
-    // Temporary camera while model loads so cube + axes are visible
-    camera.position.set(1.5, 1.5, 3);
+    // Initial camera (will be repositioned once model loads)
+    camera.position.set(0, 0, 3.2);
     camera.lookAt(0, 0, 0);
 
     /* ── STATE ── */
@@ -167,18 +159,6 @@ window.char3dActive = true;
           camera.position.set(0, 0, 3.2);
           camera.lookAt(0, 0, 0);
         }
-
-        // Keep axes + cube as permanent anchors — easier to see at a glance
-        axes.scale.setScalar(1.4);
-        testCube.position.set(1.4, 0, 0);
-        testCube.scale.setScalar(0.5);
-
-        // Red MeshBasic sphere at model center — light-independent, can't be hidden by material bugs
-        const probe = new THREE.Mesh(
-          new THREE.SphereGeometry(0.15, 12, 12),
-          new THREE.MeshBasicMaterial({ color: 0xff3344 })
-        );
-        scene.add(probe);
 
         let meshCount = 0, hasSkinnedMesh = false;
         model.traverse(o => {
