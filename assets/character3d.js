@@ -103,18 +103,32 @@ window.char3dActive = true;
           }
         });
 
-        // Initial bbox (may be inflated by skeleton bones on SkinnedMesh)
-        const rawBox = new THREE.Box3().setFromObject(model);
+        // Mesh-only bbox helper — skips bones (which inflate setFromObject for SkinnedMesh)
+        const meshBox = (obj) => {
+          obj.updateMatrixWorld(true);
+          const result = new THREE.Box3();
+          const tmp = new THREE.Box3();
+          obj.traverse(c => {
+            if ((c.isMesh || c.isSkinnedMesh) && c.geometry) {
+              if (!c.geometry.boundingBox) c.geometry.computeBoundingBox();
+              tmp.copy(c.geometry.boundingBox).applyMatrix4(c.matrixWorld);
+              result.union(tmp);
+            }
+          });
+          return result;
+        };
+
+        // Initial bbox (mesh-only, ignores skeleton)
+        const rawBox = meshBox(model);
         const rawSize = rawBox.getSize(new THREE.Vector3());
 
-        // Force-fit the model into a known 2-unit cube so framing is predictable
-        // regardless of the source model's units / bone layout
+        // Force-fit model into a known 2-unit cube
         const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z) || 1;
         const fitScale = 2.0 / maxDim;
         model.scale.setScalar(fitScale);
 
-        // Recompute bbox AFTER scaling and use it to center on world origin
-        const box = new THREE.Box3().setFromObject(model);
+        // Recompute mesh-only bbox AFTER scaling, center model at world origin
+        const box = meshBox(model);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
         model.position.sub(center);
@@ -154,9 +168,17 @@ window.char3dActive = true;
           camera.lookAt(0, 0, 0);
         }
 
-        // Remove debug probes — model framing is now reliable
-        scene.remove(axes);
-        scene.remove(testCube);
+        // Keep axes + cube as permanent anchors — easier to see at a glance
+        axes.scale.setScalar(1.4);
+        testCube.position.set(1.4, 0, 0);
+        testCube.scale.setScalar(0.5);
+
+        // Red MeshBasic sphere at model center — light-independent, can't be hidden by material bugs
+        const probe = new THREE.Mesh(
+          new THREE.SphereGeometry(0.15, 12, 12),
+          new THREE.MeshBasicMaterial({ color: 0xff3344 })
+        );
+        scene.add(probe);
 
         let meshCount = 0, hasSkinnedMesh = false;
         model.traverse(o => {
@@ -165,16 +187,15 @@ window.char3dActive = true;
         });
 
         modelReady = true;
-        console.log('[character3d] model ready', {
-          url: MODEL_URL,
-          rawSize_xyz: [+rawSize.x.toFixed(2), +rawSize.y.toFixed(2), +rawSize.z.toFixed(2)],
-          fitScale: +fitScale.toFixed(4),
-          finalSize_xyz: [+size.x.toFixed(2), +size.y.toFixed(2), +size.z.toFixed(2)],
-          finalCenter: [+center.x.toFixed(2), +center.y.toFixed(2), +center.z.toFixed(2)],
-          camera: camera.position.toArray().map(v => +v.toFixed(2)),
-          meshCount, hasSkinnedMesh,
-          animations: gltf.animations.map(a => a.name)
-        });
+        console.log('[character3d] model ready',
+          'rawSize=', +rawSize.x.toFixed(3), +rawSize.y.toFixed(3), +rawSize.z.toFixed(3),
+          'fitScale=', +fitScale.toFixed(4),
+          'finalSize=', +size.x.toFixed(3), +size.y.toFixed(3), +size.z.toFixed(3),
+          'finalCenter=', +center.x.toFixed(3), +center.y.toFixed(3), +center.z.toFixed(3),
+          'cam=', camera.position.toArray().map(v => +v.toFixed(2)).join(','),
+          'meshes=', meshCount, 'skinned=', hasSkinnedMesh
+        );
+        console.log('[character3d] anims:', gltf.animations.map(a => a.name).join(', '));
       },
       xhr => {
         if (xhr.lengthComputable) {
