@@ -1,18 +1,7 @@
-// character3d.js — ES Module
-// Loads a real 3D character via GLTFLoader and animates it.
-// MODEL_URL is the only thing to swap when you have a better model.
+// Pseudo-3D character: an AI-generated PNG with CSS 3D transform parallax,
+// idle float, click-to-wobble + emoji burst. No Three.js needed.
 
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-// Primary: VRM anime-style character from pixiv's three-vrm samples (~10MB)
-// Fallback: Three.js RobotExpressive — guaranteed to load, ~460KB
-const MODEL_URLS = [
-  'https://pixiv.github.io/three-vrm/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm',
-  'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-];
-
-window.char3dActive = true;
+const IMG_URL = 'assets/character-art.jpg?v=1';
 
 (function () {
   if (document.readyState === 'loading') {
@@ -22,245 +11,127 @@ window.char3dActive = true;
   }
 
   function init() {
+    window.char3dActive = true;
     const container = document.getElementById('character');
-    if (!container) { console.warn('[character3d] no #character container'); return; }
-    container.innerHTML = '';
-
     const wrap = document.getElementById('characterWrap');
-    if (wrap) {
-      wrap.style.display = '';        // undo any prior hide
-      wrap.style.pointerEvents = 'auto';
-    }
+    if (!container || !wrap) return;
+
+    container.innerHTML = '';
+    wrap.style.pointerEvents = 'auto';
+    wrap.style.display = '';
+    wrap.style.perspective = '1000px';
 
     const isMobile = window.innerWidth < 900;
-    // Use the WRAP rect (not container) — container hasn't been laid out yet on first paint
-    const wrapRect = wrap?.getBoundingClientRect();
-    const W = (wrapRect?.width  | 0) || container.offsetWidth  || (isMobile ? 130 : 320);
-    const H = (wrapRect?.height | 0) || container.offsetHeight || (isMobile ? 130 : 500);
-    console.log('[character3d] init dims', {
-      wrapRect: wrapRect ? [wrapRect.x|0, wrapRect.y|0, wrapRect.width|0, wrapRect.height|0] : null,
-      container: [container.offsetWidth, container.offsetHeight],
-      computed: [W, H],
-      isMobile,
-      innerWidth: window.innerWidth
-    });
 
-    /* ── SCENE / CAMERA / RENDERER ── */
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    container.appendChild(renderer.domElement);
-    Object.assign(renderer.domElement.style, {
-      width: '100%', height: '100%', display: 'block', pointerEvents: 'auto'
-    });
-
-    /* ── LIGHTS (matching site purple/pink theme) ── */
-    scene.add(new THREE.AmbientLight(0x9988ff, 0.7));
-    const sun = new THREE.DirectionalLight(0xfff5e0, 1.5);
-    sun.position.set(2, 4, 5);
-    scene.add(sun);
-    const rim = new THREE.DirectionalLight(0xd946ef, 1.0);
-    rim.position.set(-3, 3, -3);
-    scene.add(rim);
-    const fill = new THREE.DirectionalLight(0x88ccff, 0.4);
-    fill.position.set(0, -1, 4);
-    scene.add(fill);
-
-    /* ── ROOT GROUP (we apply idle float + mouse parallax to this) ── */
-    const root = new THREE.Group();
-    scene.add(root);
-
-    // Initial camera (will be repositioned once model loads)
-    camera.position.set(0, 0, 3.2);
-    camera.lookAt(0, 0, 0);
-
-    /* ── STATE ── */
-    let mixer = null;
-    const actions = {};
-    let idleAction = null;
-    let modelReady = false;
-    let cycleActions = [];    // wave / yes / no / thumbsup — rotates on click
-    let cycleIdx = 0;
-
-    /* ── LOAD MODEL (try each URL in order, fall back on error) ── */
-    const loader = new GLTFLoader();
-    function tryLoad(idx) {
-      if (idx >= MODEL_URLS.length) {
-        console.error('[character3d] all model URLs failed');
-        showFallback();
-        return;
+    /* ── Load image, chroma-key white background to transparent ── */
+    const sourceImg = new Image();
+    sourceImg.crossOrigin = 'anonymous';
+    sourceImg.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width  = sourceImg.naturalWidth;
+      cv.height = sourceImg.naturalHeight;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(sourceImg, 0, 0);
+      const data = ctx.getImageData(0, 0, cv.width, cv.height);
+      const px = data.data;
+      // Threshold tuned for AI-generated white studio backgrounds — fades edges smoothly
+      const LOW = 220, HIGH = 252;
+      for (let i = 0; i < px.length; i += 4) {
+        const r = px[i], g = px[i + 1], b = px[i + 2];
+        // Only fade near-grey/white pixels (avoid touching saturated regions)
+        const isNearWhite = r > LOW && g > LOW && b > LOW
+          && Math.abs(r - g) < 12 && Math.abs(g - b) < 12;
+        if (isNearWhite) {
+          const avg = (r + g + b) / 3;
+          if (avg >= HIGH) {
+            px[i + 3] = 0;
+          } else {
+            const t = (avg - LOW) / (HIGH - LOW);
+            px[i + 3] = Math.round(255 * (1 - t));
+          }
+        }
       }
-      const url = MODEL_URLS[idx];
-      console.log('[character3d] trying', url);
-      loader.load(url, onLoad, undefined, err => {
-        console.warn('[character3d] failed:', url, err);
-        tryLoad(idx + 1);
+      ctx.putImageData(data, 0, 0);
+
+      const img = document.createElement('img');
+      img.src = cv.toDataURL('image/png');
+      img.alt = 'Kim';
+      img.draggable = false;
+      Object.assign(img.style, {
+        height: '100%',
+        width: '100%',
+        objectFit: 'contain',
+        objectPosition: 'center bottom',
+        pointerEvents: 'none',
+        userSelect: 'none',
+        WebkitUserDrag: 'none',
+        filter: 'drop-shadow(-12px 22px 32px rgba(124, 58, 237, 0.5))',
       });
-    }
-    function onLoad(gltf) {
-        const model = gltf.scene;
-        model.traverse(obj => {
-          if (obj.isMesh) {
-            obj.castShadow = false;
-            obj.receiveShadow = false;
-          }
-        });
+      container.appendChild(img);
+      console.log('[character] image processed and mounted');
+    };
+    sourceImg.onerror = () => {
+      console.error('[character] failed to load', IMG_URL);
+      wrap.style.display = 'none';
+    };
+    sourceImg.src = IMG_URL;
 
-        // Mesh-only bbox helper — skips bones (which inflate setFromObject for SkinnedMesh)
-        const meshBox = (obj) => {
-          obj.updateMatrixWorld(true);
-          const result = new THREE.Box3();
-          const tmp = new THREE.Box3();
-          obj.traverse(c => {
-            if ((c.isMesh || c.isSkinnedMesh) && c.geometry) {
-              if (!c.geometry.boundingBox) c.geometry.computeBoundingBox();
-              tmp.copy(c.geometry.boundingBox).applyMatrix4(c.matrixWorld);
-              result.union(tmp);
-            }
-          });
-          return result;
-        };
+    /* ── Parallax + idle ── */
+    container.style.transformStyle = 'preserve-3d';
+    container.style.willChange = 'transform';
+    container.style.transition = 'none';
 
-        // Initial bbox (mesh-only, ignores skeleton)
-        const rawBox = meshBox(model);
-        const rawSize = rawBox.getSize(new THREE.Vector3());
-
-        // Force-fit model into a known 2-unit cube
-        const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z) || 1;
-        const fitScale = 2.0 / maxDim;
-        model.scale.setScalar(fitScale);
-
-        // Recompute mesh-only bbox AFTER scaling, center model at world origin
-        const box = meshBox(model);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
-        root.add(model);
-
-        // Animation mixer
-        mixer = new THREE.AnimationMixer(model);
-        gltf.animations.forEach(clip => {
-          const a = mixer.clipAction(clip);
-          actions[clip.name] = a;
-        });
-
-        // Find an idle clip
-        idleAction =
-          actions['Idle'] || actions['idle'] ||
-          actions[Object.keys(actions)[0]];
-        if (idleAction) {
-          idleAction.play();
-        }
-
-        // One-shot reaction clips for clicks
-        ['Wave', 'Yes', 'ThumbsUp', 'Punch', 'No'].forEach(name => {
-          if (actions[name]) {
-            actions[name].setLoop(THREE.LoopOnce);
-            actions[name].clampWhenFinished = false;
-            cycleActions.push(actions[name]);
-          }
-        });
-
-        // Fixed safe camera framing (model is now guaranteed to fit in a 2-unit cube)
-        if (isMobile) {
-          // Slightly tighter zoom and aim higher to favor face/upper body in circle crop
-          camera.position.set(0, 0.4, 2.6);
-          camera.lookAt(0, 0.4, 0);
-        } else {
-          camera.position.set(0, 0, 3.2);
-          camera.lookAt(0, 0, 0);
-        }
-
-        let meshCount = 0, hasSkinnedMesh = false;
-        model.traverse(o => {
-          if (o.isMesh) meshCount++;
-          if (o.isSkinnedMesh) hasSkinnedMesh = true;
-        });
-
-        modelReady = true;
-        console.log('[character3d] model ready',
-          'rawSize=', +rawSize.x.toFixed(3), +rawSize.y.toFixed(3), +rawSize.z.toFixed(3),
-          'fitScale=', +fitScale.toFixed(4),
-          'finalSize=', +size.x.toFixed(3), +size.y.toFixed(3), +size.z.toFixed(3),
-          'finalCenter=', +center.x.toFixed(3), +center.y.toFixed(3), +center.z.toFixed(3),
-          'cam=', camera.position.toArray().map(v => +v.toFixed(2)).join(','),
-          'meshes=', meshCount, 'skinned=', hasSkinnedMesh
-        );
-        console.log('[character3d] anims:', gltf.animations.map(a => a.name).join(', '));
-    }
-
-    // Kick off model loading
-    tryLoad(0);
-
-    /* ── INTERACTION ── */
-    let tRY = 0, tRX = 0, cRY = 0, cRX = 0;
+    let tX = 0, tY = 0, cX = 0, cY = 0;
     if (!isMobile) {
       window.addEventListener('mousemove', e => {
-        tRY = (e.clientX / window.innerWidth  - 0.5) * 0.7;
-        tRX = (e.clientY / window.innerHeight - 0.5) * 0.2;
+        tX = (e.clientX / window.innerWidth  - 0.5) * 12; // ±6°
+        tY = (e.clientY / window.innerHeight - 0.5) * 5;  // ±2.5°
       });
     }
 
-    renderer.domElement.addEventListener('click', () => {
-      if (!modelReady || !cycleActions.length) return;
-      const a = cycleActions[cycleIdx % cycleActions.length];
-      cycleIdx++;
-      a.reset();
-      a.fadeIn(0.15);
-      a.play();
-      // After clip ends, fade out so it doesn't linger
-      const dur = a.getClip().duration;
-      setTimeout(() => a.fadeOut(0.3), Math.max(0, dur * 1000 - 250));
-    });
-
-    /* ── RENDER LOOP ── */
-    const clock = new THREE.Clock();
+    let t = 0, wobble = 0;
     function tick() {
       requestAnimationFrame(tick);
-      const dt = Math.min(clock.getDelta(), 0.05);
-      if (mixer) mixer.update(dt);
+      t += 0.016;
+      cX += (tX - cX) * 0.06;
+      cY += (tY - cY) * 0.06;
 
-      if (modelReady) {
-        // Idle bob
-        root.position.y = Math.sin(clock.elapsedTime * 0.8) * 0.04;
-
-        // Mouse parallax (PC only)
-        if (!isMobile) {
-          cRY += (tRY - cRY) * 0.06;
-          cRX += (tRX - cRX) * 0.06;
-          root.rotation.y = cRY;
-        }
+      const floatY     = Math.sin(t * 0.8)  * 4;       // gentle bob
+      const idleRotZ   = Math.sin(t * 0.45) * 0.6;     // subtle sway
+      let wobbleRotZ = 0;
+      if (wobble > 0) {
+        wobbleRotZ = Math.sin(wobble * 28) * wobble * 9;
+        wobble -= 0.022;
+        if (wobble < 0) wobble = 0;
       }
-      renderer.render(scene, camera);
+
+      container.style.transform =
+        `translateY(${floatY}px) ` +
+        `rotateY(${cX}deg) ` +
+        `rotateX(${-cY}deg) ` +
+        `rotateZ(${idleRotZ + wobbleRotZ}deg)`;
     }
     tick();
 
-    function resize() {
-      const r = wrap?.getBoundingClientRect();
-      const nW = (r?.width | 0) || container.offsetWidth;
-      const nH = (r?.height | 0) || container.offsetHeight;
-      if (nW && nH) {
-        camera.aspect = nW / nH;
-        camera.updateProjectionMatrix();
-        renderer.setSize(nW, nH);
-        console.log('[character3d] resized canvas to', nW, 'x', nH);
-      }
-    }
-    window.addEventListener('resize', resize);
-    if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap || container);
-    // Trigger an extra resize after layout has settled
-    requestAnimationFrame(resize);
-    setTimeout(resize, 300);
-  }
+    /* ── Click → wobble + emoji burst ── */
+    wrap.addEventListener('click', e => {
+      if (e.target.closest('.bubble')) return;
+      wobble = 1.0;
 
-  function showFallback() {
-    const wrap = document.getElementById('characterWrap');
-    if (wrap) wrap.style.display = 'none';
-    console.error('[character3d] character hidden — see error above');
+      const emojiPool = ['👋', '✨', '💖', '🚀', '🎯'];
+      const el = document.createElement('div');
+      el.textContent = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+      Object.assign(el.style, {
+        position: 'absolute',
+        fontSize: isMobile ? '24px' : '38px',
+        pointerEvents: 'none',
+        top: '24%',
+        left: (32 + Math.random() * 32) + '%',
+        zIndex: '100',
+        animation: 'char-emojiBurst 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+      });
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    });
   }
 })();
