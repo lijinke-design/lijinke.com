@@ -59,11 +59,39 @@ window.char3dActive = true;
     const root = new THREE.Group();
     scene.add(root);
 
-    /* ── STATE ── */
+    /* ── STATE + REST POSE ── */
     let currentVrm = null;
     let modelReady = false;
     let waveT = 0;
-    let restRotR = null;  // saved rest rotation of right upper arm
+
+    // Natural "稍息 / contrapposto" rest pose offsets (applied every frame after vrm.update)
+    // VRM 1.0 normalized bones: T-pose = all identity. We override to a casual standing pose.
+    const POSE = {
+      // Arms hang down at ~75° from horizontal (slightly out from body, not stiff vertical)
+      leftUpperArm:  { x: 0,    y: 0,    z:  Math.PI * 0.42 },  // +75° → arm down on the left
+      rightUpperArm: { x: 0,    y: 0,    z: -Math.PI * 0.42 },  // -75° → arm down on the right
+      // Slight inward forearm tuck so hands rest in front of thighs (not stuck out)
+      leftLowerArm:  { x: 0,    y:  0.15, z: 0 },
+      rightLowerArm: { x: 0,    y: -0.15, z: 0 },
+      // Weight on LEFT leg → hips tilt slightly to the right side
+      hips:          { x: 0,    y: 0,    z: -0.05 },
+      // Right leg slightly bent + foot pointing out (the resting leg)
+      rightUpperLeg: { x: 0.08, y: 0.06, z: 0 },
+      leftUpperLeg:  { x: 0,    y: 0,    z: 0 },
+      // Spine counter-tilts to keep the head over the supporting foot
+      spine:         { x: 0,    y: 0,    z:  0.04 },
+      // Subtle head tilt for personality
+      head:          { x: 0,    y: 0,    z:  0.02 },
+    };
+
+    /* ── REST POSE APPLICATION HELPER ── */
+    function applyRestPose(vrm) {
+      if (!vrm.humanoid) return;
+      for (const [boneName, rot] of Object.entries(POSE)) {
+        const bone = vrm.humanoid.getNormalizedBoneNode(boneName);
+        if (bone) bone.rotation.set(rot.x, rot.y, rot.z);
+      }
+    }
 
     /* ── LOAD VRM ── */
     const loader = new GLTFLoader();
@@ -86,6 +114,9 @@ window.char3dActive = true;
         // VRM 1.0 default forward is +Z (toward camera). No rotation needed.
         root.add(vrm.scene);
 
+        // Apply the rest pose ONCE before bbox so the body is compact (not T-pose)
+        applyRestPose(vrm);
+
         // Mesh-only bbox (skip bones)
         vrm.scene.updateMatrixWorld(true);
         const box = new THREE.Box3();
@@ -100,24 +131,23 @@ window.char3dActive = true;
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        // Camera framing
+        // Camera framing — fit BOTH width and height of the bbox
         const fov = camera.fov * Math.PI / 180;
+        const aspect = camera.aspect;
+        const fitForHeight = (size.y * 0.55) / Math.tan(fov / 2);
+        const fitForWidth  = (size.x * 0.55) / (Math.tan(fov / 2) * aspect);
+        const dist = Math.max(fitForHeight, fitForWidth) + 0.2; // margin
+
         if (isMobile) {
           // Mobile circle: zoom in on head + shoulders
-          const headY = center.y + size.y * 0.32;
-          const dist = (size.y * 0.20) / Math.tan(fov / 2);
-          camera.position.set(0, headY, dist);
+          const headY = center.y + size.y * 0.30;
+          camera.position.set(0, headY, dist * 0.45);
           camera.lookAt(0, headY, 0);
         } else {
-          // Desktop: full body with small margin
-          const dist = (size.y * 0.58) / Math.tan(fov / 2);
+          // Desktop: full body
           camera.position.set(0, center.y, dist);
           camera.lookAt(0, center.y, 0);
         }
-
-        // Save rest pose for right upper arm (for wave animation)
-        const rArm = vrm.humanoid?.getNormalizedBoneNode('rightUpperArm');
-        if (rArm) restRotR = rArm.rotation.clone();
 
         modelReady = true;
         console.log('[character] VRM ready',
@@ -179,53 +209,57 @@ window.char3dActive = true;
       const dt = Math.min(clock.getDelta(), 0.05);
 
       if (modelReady && currentVrm) {
-        // VRM update (spring bones, expressions)
+        // 1) VRM internal update (spring bones, expressions)
         currentVrm.update(dt);
 
-        // Idle float
-        currentVrm.scene.position.y = Math.sin(clock.elapsedTime * 0.8) * 0.015;
+        // 2) Idle float (gentle breathing)
+        currentVrm.scene.position.y = Math.sin(clock.elapsedTime * 0.8) * 0.012;
 
-        // Body parallax
+        // 3) Re-apply rest pose AFTER vrm.update so it persists each frame
+        applyRestPose(currentVrm);
+
+        // 4) Body parallax + head look-at cursor
         if (!isMobile) {
           cRY += (tRY - cRY) * 0.06;
           cRX += (tRX - cRX) * 0.06;
           root.rotation.y = cRY;
 
-          // Head looks at cursor (counter-rotate)
+          // Layer head rotation on top of the rest pose tilt
           const head = currentVrm.humanoid?.getNormalizedBoneNode('head');
           if (head) {
-            head.rotation.y = -cRY * 0.6;
-            head.rotation.x = cRX * 0.35;
+            head.rotation.set(
+              POSE.head.x + cRX * 0.35,
+              POSE.head.y - cRY * 0.6,
+              POSE.head.z
+            );
           }
         }
 
-        // Wave animation on right upper arm (sign chosen to raise to the side)
-        const rArm = currentVrm.humanoid?.getNormalizedBoneNode('rightUpperArm');
-        if (rArm && restRotR) {
-          if (waveT > 0) {
+        // 5) Wave animation overrides ONLY the right upper arm during waveT > 0
+        if (waveT > 0) {
+          const rArm = currentVrm.humanoid?.getNormalizedBoneNode('rightUpperArm');
+          if (rArm) {
             const elapsed = (1 - waveT) * WAVE_DUR;
-            // 3 phases: raise (0..0.4s) → wave (0.4..2.0s) → lower (2.0..2.4s)
-            let lift, wave;
+            let lift, wiggle;
             if (elapsed < 0.4) {
-              lift = elapsed / 0.4;
-              wave = 0;
+              lift = elapsed / 0.4; wiggle = 0;
             } else if (elapsed < 2.0) {
-              lift = 1;
-              wave = Math.sin((elapsed - 0.4) * 9) * 0.32;
+              lift = 1; wiggle = Math.sin((elapsed - 0.4) * 9) * 0.32;
             } else {
-              lift = (2.4 - elapsed) / 0.4;
-              wave = 0;
+              lift = (2.4 - elapsed) / 0.4; wiggle = 0;
             }
-            // Negative Z rotation raises the right arm to the side
-            rArm.rotation.z = restRotR.z + (-1.55 * lift) + wave * lift;
-            rArm.rotation.x = restRotR.x;
-            rArm.rotation.y = restRotR.y;
-            waveT -= dt / WAVE_DUR;
-            if (waveT < 0) {
-              waveT = 0;
-              rArm.rotation.copy(restRotR);
-            }
+            // Wave target: arm raised up + slightly forward, opposite Z direction from rest (down)
+            // Rest right arm: z = -1.32 (down). Wave target: z = +0.8 (up). Lerp by `lift`.
+            const restZ = POSE.rightUpperArm.z;
+            const waveZ = 0.9;
+            rArm.rotation.set(
+              POSE.rightUpperArm.x,
+              POSE.rightUpperArm.y,
+              restZ + (waveZ - restZ) * lift + wiggle * lift
+            );
           }
+          waveT -= dt / WAVE_DUR;
+          if (waveT < 0) waveT = 0;
         }
       }
 
