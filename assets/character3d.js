@@ -5,7 +5,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const MODEL_URL = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
+// Primary: VRM anime-style character from pixiv's three-vrm samples (~10MB)
+// Fallback: Three.js RobotExpressive — guaranteed to load, ~460KB
+const MODEL_URLS = [
+  'https://pixiv.github.io/three-vrm/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm',
+  'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+];
 
 window.char3dActive = true;
 
@@ -82,11 +87,22 @@ window.char3dActive = true;
     let cycleActions = [];    // wave / yes / no / thumbsup — rotates on click
     let cycleIdx = 0;
 
-    /* ── LOAD MODEL ── */
+    /* ── LOAD MODEL (try each URL in order, fall back on error) ── */
     const loader = new GLTFLoader();
-    loader.load(
-      MODEL_URL,
-      gltf => {
+    function tryLoad(idx) {
+      if (idx >= MODEL_URLS.length) {
+        console.error('[character3d] all model URLs failed');
+        showFallback();
+        return;
+      }
+      const url = MODEL_URLS[idx];
+      console.log('[character3d] trying', url);
+      loader.load(url, onLoad, undefined, err => {
+        console.warn('[character3d] failed:', url, err);
+        tryLoad(idx + 1);
+      });
+    }
+    function onLoad(gltf) {
         const model = gltf.scene;
         model.traverse(obj => {
           if (obj.isMesh) {
@@ -176,18 +192,10 @@ window.char3dActive = true;
           'meshes=', meshCount, 'skinned=', hasSkinnedMesh
         );
         console.log('[character3d] anims:', gltf.animations.map(a => a.name).join(', '));
-      },
-      xhr => {
-        if (xhr.lengthComputable) {
-          const pct = (xhr.loaded / xhr.total * 100).toFixed(0);
-          if (pct === '50' || pct === '100') console.log('[character3d] loading', pct + '%');
-        }
-      },
-      err => {
-        console.error('[character3d] model load failed:', err);
-        showFallback();
-      }
-    );
+    }
+
+    // Kick off model loading
+    tryLoad(0);
 
     /* ── INTERACTION ── */
     let tRY = 0, tRX = 0, cRY = 0, cRX = 0;
