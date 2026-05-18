@@ -66,19 +66,20 @@ window.char3dActive = true;
 
     // Natural "稍息 / contrapposto" rest pose offsets (applied every frame after vrm.update)
     // VRM 1.0 normalized bones: T-pose = all identity. We override to a casual standing pose.
+    // VRM normalized bones: in this rig, NEGATIVE Z on leftUpperArm and
+    // POSITIVE Z on rightUpperArm rotates the arms DOWN (the opposite of what
+    // we tried first). v13 used the opposite signs and ended up with arms
+    // raised over the head — funny but wrong.
     const POSE = {
-      // Arms hang down at ~75° from horizontal (slightly out from body, not stiff vertical)
-      leftUpperArm:  { x: 0,    y: 0,    z:  Math.PI * 0.42 },  // +75° → arm down on the left
-      rightUpperArm: { x: 0,    y: 0,    z: -Math.PI * 0.42 },  // -75° → arm down on the right
-      // Slight inward forearm tuck so hands rest in front of thighs (not stuck out)
-      leftLowerArm:  { x: 0,    y:  0.15, z: 0 },
-      rightLowerArm: { x: 0,    y: -0.15, z: 0 },
-      // Weight on LEFT leg → hips tilt slightly to the right side
+      // Arms hang down at ~75° from horizontal
+      leftUpperArm:  { x: 0,    y: 0,    z: -Math.PI * 0.42 },
+      rightUpperArm: { x: 0,    y: 0,    z:  Math.PI * 0.42 },
+      // Weight on LEFT leg → hips tilt slightly
       hips:          { x: 0,    y: 0,    z: -0.05 },
-      // Right leg slightly bent + foot pointing out (the resting leg)
+      // Right leg slightly bent (the resting / non-supporting leg)
       rightUpperLeg: { x: 0.08, y: 0.06, z: 0 },
       leftUpperLeg:  { x: 0,    y: 0,    z: 0 },
-      // Spine counter-tilts to keep the head over the supporting foot
+      // Spine counter-tilts so head stays over the supporting foot
       spine:         { x: 0,    y: 0,    z:  0.04 },
       // Subtle head tilt for personality
       head:          { x: 0,    y: 0,    z:  0.02 },
@@ -248,10 +249,9 @@ window.char3dActive = true;
             } else {
               lift = (2.4 - elapsed) / 0.4; wiggle = 0;
             }
-            // Wave target: arm raised up + slightly forward, opposite Z direction from rest (down)
-            // Rest right arm: z = -1.32 (down). Wave target: z = +0.8 (up). Lerp by `lift`.
-            const restZ = POSE.rightUpperArm.z;
-            const waveZ = 0.9;
+            // Wave target: arm raised up — flip sign from the rest (down) value
+            const restZ = POSE.rightUpperArm.z;   // +1.32 (arm hanging down)
+            const waveZ = -1.0;                    // arm raised up to the side
             rArm.rotation.set(
               POSE.rightUpperArm.x,
               POSE.rightUpperArm.y,

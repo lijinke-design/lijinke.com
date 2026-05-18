@@ -68,13 +68,85 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
     background:
       radial-gradient(ellipse 400px 80vh at 0% 30%, rgba(192, 132, 252, 0.45), transparent 60%),
       radial-gradient(ellipse 400px 80vh at 100% 70%, rgba(217, 70, 239, 0.35), transparent 60%),
       radial-gradient(ellipse 800px 300px at 50% 100%, rgba(124, 58, 237, 0.4), transparent 70%);
     filter: blur(40px);
     animation: bloomShift 12s ease-in-out infinite alternate;
+  }
+
+  /* ============ 紫色极光流动 ============ */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    filter: blur(60px);
+    opacity: 0.65;
+  }
+  .aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    will-change: transform;
+    mix-blend-mode: screen;
+  }
+  .aurora-blob.b1 {
+    width: 55vmax; height: 55vmax;
+    top: -15vmax; left: -15vmax;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.75), transparent 60%);
+    animation: aurora-1 26s ease-in-out infinite alternate;
+  }
+  .aurora-blob.b2 {
+    width: 50vmax; height: 50vmax;
+    top: 20vh; right: -20vmax;
+    background: radial-gradient(circle, rgba(217, 70, 239, 0.6), transparent 60%);
+    animation: aurora-2 32s ease-in-out infinite alternate;
+  }
+  .aurora-blob.b3 {
+    width: 45vmax; height: 45vmax;
+    bottom: -15vmax; left: 25vw;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.55), transparent 60%);
+    animation: aurora-3 38s ease-in-out infinite alternate;
+  }
+  .aurora-blob.b4 {
+    width: 35vmax; height: 35vmax;
+    top: 50vh; left: 30vw;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.4), transparent 60%);
+    animation: aurora-4 44s ease-in-out infinite alternate;
+  }
+
+  @keyframes aurora-1 {
+    from { transform: translate(0, 0) rotate(0deg) scale(1); }
+    to   { transform: translate(30vw, 25vh) rotate(180deg) scale(1.25); }
+  }
+  @keyframes aurora-2 {
+    from { transform: translate(0, 0) rotate(0deg) scale(1); }
+    to   { transform: translate(-28vw, 18vh) rotate(-150deg) scale(1.3); }
+  }
+  @keyframes aurora-3 {
+    from { transform: translate(0, 0) rotate(0deg) scale(1); }
+    to   { transform: translate(22vw, -32vh) rotate(120deg) scale(1.15); }
+  }
+  @keyframes aurora-4 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-18vw, -20vh) scale(1.4); }
+  }
+
+  /* ============ 满天星空 ============ */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .stars svg { width: 100%; height: 100%; display: block; }
+
+  @keyframes star-twinkle {
+    0%, 100% { opacity: var(--tw-min, 0.15); transform: scale(1); }
+    50%      { opacity: var(--tw-max, 0.95); transform: scale(1.4); }
   }
 
   @keyframes bloomShift {
@@ -1076,6 +1148,17 @@
 </head>
 <body>
 
+<!-- 紫色极光（流动的大色团） -->
+<div class="aurora" aria-hidden="true">
+  <div class="aurora-blob b1"></div>
+  <div class="aurora-blob b2"></div>
+  <div class="aurora-blob b3"></div>
+  <div class="aurora-blob b4"></div>
+</div>
+
+<!-- 满天星空 -->
+<div class="stars" id="stars" aria-hidden="true"></div>
+
 <!-- 边缘光晕 -->
 <div class="edge-bloom"></div>
 
@@ -1282,6 +1365,40 @@
 <div class="toast" id="toast">已复制</div>
 
 <script>
+  /* ============ 满天星空（SVG, 随机位置+独立闪烁） ============ */
+  (function makeStars() {
+    const wrap = document.getElementById('stars');
+    if (!wrap) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const COUNT = 220;
+    for (let i = 0; i < COUNT; i++) {
+      const c = document.createElementNS(NS, 'circle');
+      const big = Math.random() < 0.12;
+      const r  = big ? 0.18 + Math.random() * 0.15 : 0.05 + Math.random() * 0.08;
+      const cx = Math.random() * 100;
+      const cy = Math.random() * 100;
+      const isWhite = Math.random() < 0.35;
+      c.setAttribute('cx', cx);
+      c.setAttribute('cy', cy);
+      c.setAttribute('r',  r);
+      c.setAttribute('fill', isWhite ? '#ffffff' : (Math.random() < 0.5 ? '#d8b4fe' : '#f0abfc'));
+      // independent twinkle timing
+      const dur   = (2 + Math.random() * 5).toFixed(2);
+      const delay = (-Math.random() * dur).toFixed(2);
+      c.style.cssText =
+        `--tw-min:${(0.1 + Math.random() * 0.25).toFixed(2)};` +
+        `--tw-max:${(0.7 + Math.random() * 0.3).toFixed(2)};` +
+        `animation: star-twinkle ${dur}s ease-in-out ${delay}s infinite;` +
+        `transform-origin: ${cx}% ${cy}%;` +
+        (big ? `filter: drop-shadow(0 0 1px #fff);` : '');
+      svg.appendChild(c);
+    }
+    wrap.appendChild(svg);
+  })();
+
   /* ============ 自定义光标 ============ */
   const dot = document.getElementById('cursorDot');
   const ring = document.getElementById('cursorRing');
@@ -1760,6 +1877,6 @@
   }
 }
 </script>
-<script type="module" src="assets/character3d.js?v=13"></script>
+<script type="module" src="assets/character3d.js?v=14"></script>
 </body>
 </html>
