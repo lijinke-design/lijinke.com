@@ -1383,15 +1383,24 @@
 
     // 三层星: 远(多/小/慢) → 中 → 近(少/大/快)
     const COLORS = ['#ffffff', '#ffffff', '#d8b4fe', '#f0abfc', '#a78bfa', '#7dd3fc'];
+    const RGB_MAP = {
+      '#ffffff': '255,255,255',
+      '#d8b4fe': '216,180,254',
+      '#f0abfc': '240,171,252',
+      '#a78bfa': '167,139,250',
+      '#7dd3fc': '125,211,252',
+    };
     function makeLayer(count, rMin, rMax, vx) {
       const a = [];
       for (let i = 0; i < count; i++) {
+        const color = COLORS[(Math.random() * COLORS.length) | 0];
         a.push({
           x: Math.random() * W,
           y: Math.random() * H,
           r: (rMin + Math.random() * (rMax - rMin)) * DPR,
           vx: vx * DPR * (0.7 + Math.random() * 0.6),
-          color: COLORS[(Math.random() * COLORS.length) | 0],
+          color,
+          rgb: RGB_MAP[color],
           phase: Math.random() * Math.PI * 2,
           twSpeed: 0.4 + Math.random() * 2.0,
           baseA: 0.35 + Math.random() * 0.55,
@@ -1439,18 +1448,30 @@
         const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(s.phase));
         const a  = s.baseA * tw;
         const r  = s.r * (0.85 + 0.35 * tw);
+        const cx = s.x + px;
+        const cy = s.y + py;
+
+        // 中景 + 近景: 柔和径向光晕 (radial gradient, edge fades to 0)
+        if (idx >= 1) {
+          const glowR = r * (idx === 2 ? 6 : 3.5);
+          const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+          const rgb = s.rgb;
+          grad.addColorStop(0,    'rgba(' + rgb + ',' + (a * 0.32) + ')');
+          grad.addColorStop(0.35, 'rgba(' + rgb + ',' + (a * 0.10) + ')');
+          grad.addColorStop(1,    'rgba(' + rgb + ',0)');
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 星核 (always)
         ctx.globalAlpha = a;
         ctx.fillStyle = s.color;
         ctx.beginPath();
-        ctx.arc(s.x + px, s.y + py, r, 0, Math.PI * 2);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fill();
-        // 近景大星: 加柔和光晕
-        if (idx === 2 && s.r > 1.2 * DPR) {
-          ctx.globalAlpha = a * 0.25;
-          ctx.beginPath();
-          ctx.arc(s.x + px, s.y + py, r * 3.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
       }
     }
 
