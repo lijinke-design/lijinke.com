@@ -804,6 +804,60 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* ============ 背景音乐按钮 (左下角隐蔽) ============ */
+  .bgm-toggle {
+    position: fixed;
+    left: 22px;
+    bottom: 22px;
+    z-index: 60;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    background: rgba(13, 4, 40, 0.5);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    opacity: 0.38;
+    transition: opacity 0.3s, transform 0.3s, border-color 0.3s, background 0.3s;
+  }
+  .bgm-toggle:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    border-color: var(--violet-3);
+    background: rgba(168, 85, 247, 0.2);
+  }
+  .bgm-bars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 16px;
+  }
+  .bgm-bars i {
+    display: block;
+    width: 2.5px;
+    height: 16px;
+    background: var(--violet-3);
+    border-radius: 2px;
+    transform-origin: center;
+    transform: scaleY(0.28);
+    transition: transform 0.2s;
+  }
+  .bgm-toggle.playing .bgm-bars i {
+    animation: bgm-bounce 1s ease-in-out infinite;
+  }
+  .bgm-toggle.playing .bgm-bars i:nth-child(1) { animation-delay: 0s;    }
+  .bgm-toggle.playing .bgm-bars i:nth-child(2) { animation-delay: 0.22s; }
+  .bgm-toggle.playing .bgm-bars i:nth-child(3) { animation-delay: 0.44s; }
+  .bgm-toggle.playing .bgm-bars i:nth-child(4) { animation-delay: 0.13s; }
+  .bgm-toggle.paused .bgm-bars i { transform: scaleY(0.28); opacity: 0.55; }
+  @keyframes bgm-bounce {
+    0%, 100% { transform: scaleY(0.28); }
+    50%      { transform: scaleY(1); }
+  }
+
   /* ============ 语言切换 ============ */
   .lang-switch {
     display: inline-flex;
@@ -1360,6 +1414,12 @@
 </div>
 
 <div class="toast" id="toast">已复制</div>
+
+<!-- 背景音乐 (CC BY: Tranquility — Kevin MacLeod / incompetech.com) -->
+<audio id="bgm" loop preload="auto"><source src="assets/bgm.m4a?v=1" type="audio/mp4" /></audio>
+<button id="bgmToggle" class="bgm-toggle paused" data-hover aria-label="背景音乐开关" title="背景音乐 ♪ Tranquility — Kevin MacLeod (CC BY)">
+  <span class="bgm-bars"><i></i><i></i><i></i><i></i></span>
+</button>
 
 <script>
   /* ============ Canvas 粒子星空（3 层视差 + 鼠标视差 + 随机流星） ============ */
@@ -1942,6 +2002,55 @@
     });
     setTimeout(() => r.remove(), 700);
   });
+
+  /* ============ 背景音乐 ============ */
+  (function () {
+    const audio = document.getElementById('bgm');
+    const btn   = document.getElementById('bgmToggle');
+    if (!audio || !btn) return;
+
+    audio.volume = 0.32;
+    let wantMusic = localStorage.getItem('bgm-pref') !== 'off'; // 默认开
+
+    function setUI(playing) {
+      btn.classList.toggle('playing', playing);
+      btn.classList.toggle('paused', !playing);
+    }
+    setUI(false);
+
+    function startPlay() {
+      audio.play().then(() => setUI(true)).catch(() => setUI(false));
+    }
+
+    // 尝试自动播放; 被浏览器拦截则等用户首次交互再接上
+    if (wantMusic) {
+      audio.play().then(() => setUI(true)).catch(() => {
+        const onFirst = (e) => {
+          // 点的是音乐按钮本身,交给按钮自己的 handler 处理
+          if (e.target && e.target.closest && e.target.closest('#bgmToggle')) return;
+          if (wantMusic && audio.paused) startPlay();
+          window.removeEventListener('pointerdown', onFirst);
+          window.removeEventListener('keydown', onFirst);
+        };
+        window.addEventListener('pointerdown', onFirst);
+        window.addEventListener('keydown', onFirst);
+      });
+    }
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();           // 不触发涟漪 / 首次交互逻辑
+      if (audio.paused) {
+        wantMusic = true;
+        localStorage.setItem('bgm-pref', 'on');
+        startPlay();
+      } else {
+        wantMusic = false;
+        localStorage.setItem('bgm-pref', 'off');
+        audio.pause();
+        setUI(false);
+      }
+    });
+  })();
 </script>
 
 <!-- 微信二维码弹窗 -->
