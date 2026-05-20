@@ -1415,9 +1415,9 @@
 
 <div class="toast" id="toast">已复制</div>
 
-<!-- 背景音乐 (CC BY: Anamalie — Kevin MacLeod / incompetech.com) -->
-<audio id="bgm" loop preload="auto"><source src="assets/bgm.m4a?v=2" type="audio/mp4" /></audio>
-<button id="bgmToggle" class="bgm-toggle paused" data-hover aria-label="背景音乐开关" title="背景音乐 ♪ Anamalie — Kevin MacLeod (CC BY)">
+<!-- 背景音乐 (CC BY: Frozen Star — Kevin MacLeod / incompetech.com) -->
+<audio id="bgm" loop preload="auto"><source src="assets/bgm.m4a?v=3" type="audio/mp4" /></audio>
+<button id="bgmToggle" class="bgm-toggle paused" data-hover aria-label="背景音乐开关" title="背景音乐 ♪ Frozen Star — Kevin MacLeod (CC BY)">
   <span class="bgm-bars"><i></i><i></i><i></i><i></i></span>
 </button>
 
@@ -2009,7 +2009,7 @@
     const btn   = document.getElementById('bgmToggle');
     if (!audio || !btn) return;
 
-    audio.volume = 0.32;
+    audio.volume = 0.55;
     let wantMusic = localStorage.getItem('bgm-pref') !== 'off'; // 默认开
 
     function setUI(playing) {
