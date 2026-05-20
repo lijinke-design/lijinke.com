@@ -1287,9 +1287,13 @@
     <button class="chat-close" id="chatClose" data-hover>×</button>
   </header>
 
-  <div class="chat-messages" id="chatMsgs"></div>
-
-  <div class="quick-replies" id="quickReplies"></div>
+  <!-- Dify 真 AI 聊天（懒加载：首次打开面板时才注入 src） -->
+  <iframe id="difyFrame"
+    data-src="https://udify.app/chatbot/4UgRAjai0ahtREgd"
+    style="flex:1; width:100%; border:0; background:transparent;"
+    frameborder="0"
+    allow="microphone"
+    title="Chat with Kim's AI"></iframe>
 </aside>
 
 <!-- ============ Overlay: About ============ -->
@@ -1674,22 +1678,23 @@
 
   /* ============ 聊天面板 ============ */
   const panel = document.getElementById('chatPanel');
-  const msgs = document.getElementById('chatMsgs');
+  const difyFrame = document.getElementById('difyFrame');
 
-  function openChat() { panel.classList.add('open'); }
+  function openChat() {
+    // 懒加载 Dify iframe：首次打开才注入 src
+    if (difyFrame && !difyFrame.src && difyFrame.dataset.src) {
+      difyFrame.src = difyFrame.dataset.src;
+    }
+    panel.classList.add('open');
+  }
   function closeChat() { panel.classList.remove('open'); }
 
   bubble.addEventListener('click', openChat);
   document.getElementById('ctaChat').addEventListener('click', openChat);
   document.getElementById('chatClose').addEventListener('click', closeChat);
 
-  function appendMsg(text, who) {
-    const el = document.createElement('div');
-    el.className = 'msg ' + who;
-    el.textContent = text;
-    msgs.appendChild(el);
-    msgs.scrollTop = msgs.scrollHeight;
-  }
+  // 旧的脚本化聊天已被 Dify 真 AI iframe 取代；保留空函数避免其它地方报错
+  function appendMsg() {}
 
   /* ============ 微信二维码弹窗 ============ */
   function openWechatModal() {
@@ -1910,23 +1915,8 @@
       </div>`;
   }
 
-  function renderChatInit() {
-    msgs.innerHTML = '';
-    const greet = window.content?.chat?.greeting || [];
-    greet.forEach(line => {
-      const el = document.createElement('div');
-      el.className = 'msg her';
-      el.textContent = pick(line, currentLang);
-      msgs.appendChild(el);
-    });
-    const qr = document.getElementById('quickReplies');
-    if (qr && window.content?.chat) {
-      const topics = window.content.chat.topics || [];
-      const labelObj = window.content.chat.topicsLabel || { zh: '// 挑个话题', en: '// Pick a topic' };
-      qr.innerHTML = `<span class="label" data-zh="${labelObj.zh}" data-en="${labelObj.en}">${pick(labelObj, currentLang)}</span>` +
-        topics.map(t => `<button class="qr" data-q="${t.key}" data-hover data-zh="${(t.q.zh||'').replace(/"/g,'&quot;')}" data-en="${(t.q.en||'').replace(/"/g,'&quot;')}">${pick(t.q, currentLang)}</button>`).join('');
-    }
-  }
+  // 聊天面板已改为 Dify 真 AI iframe，无需再初始化脚本化问候/话题
+  function renderChatInit() {}
 
   /* 聊天问题点击 (事件委托) */
   document.body.addEventListener('click', e => {
