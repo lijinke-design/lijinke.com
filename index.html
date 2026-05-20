@@ -779,6 +779,63 @@
     border-color: var(--violet-3);
   }
 
+  .chat-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(192, 132, 252, 0.15);
+  }
+
+  .chat-input input {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(192, 132, 252, 0.25);
+    border-radius: 99px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .chat-input input::placeholder { color: var(--muted); }
+
+  .chat-input input:focus {
+    border-color: var(--violet-3);
+    background: rgba(168, 85, 247, 0.14);
+  }
+
+  .chat-input button {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet-1), var(--violet-2));
+    color: #fff;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .chat-input button:hover { transform: scale(1.08); }
+  .chat-input button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* 「正在输入」三点动画 */
+  .msg.typing { display: inline-flex; gap: 4px; align-items: center; }
+  .msg.typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--violet-3);
+    animation: typingDot 1.2s infinite ease-in-out both;
+  }
+  .msg.typing span:nth-child(2) { animation-delay: 0.2s; }
+  .msg.typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
   /* ============ Toast ============ */
   .toast {
     position: fixed;
@@ -1287,13 +1344,16 @@
     <button class="chat-close" id="chatClose" data-hover>×</button>
   </header>
 
-  <!-- Dify 真 AI 聊天（懒加载：首次打开面板时才注入 src） -->
-  <iframe id="difyFrame"
-    data-src="https://udify.app/chatbot/4UgRAjai0ahtREgd"
-    style="flex:1; width:100%; border:0; background:transparent;"
-    frameborder="0"
-    allow="microphone"
-    title="Chat with Kim's AI"></iframe>
+  <div class="chat-messages" id="chatMsgs"></div>
+
+  <div class="quick-replies" id="quickReplies"></div>
+
+  <form class="chat-input" id="chatForm" autocomplete="off">
+    <input type="text" id="chatField" placeholder="问我点什么…" maxlength="500" aria-label="聊天输入框" />
+    <button type="submit" id="chatSend" data-hover aria-label="发送">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3.4 20.4l17.45-7.48a1 1 0 0 0 0-1.84L3.4 3.6a.993.993 0 0 0-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>
+    </button>
+  </form>
 </aside>
 
 <!-- ============ Overlay: About ============ -->
@@ -1676,25 +1736,119 @@
   window.addEventListener('resize', positionBubble);
   setInterval(positionBubble, 100);
 
-  /* ============ 聊天面板 ============ */
+  /* ============ 聊天面板（真 AI · GLM-4-Flash via /api/chat） ============ */
   const panel = document.getElementById('chatPanel');
-  const difyFrame = document.getElementById('difyFrame');
+  const msgs  = document.getElementById('chatMsgs');
+  const chatForm  = document.getElementById('chatForm');
+  const chatField = document.getElementById('chatField');
+  const chatSend  = document.getElementById('chatSend');
 
-  function openChat() {
-    // 懒加载 Dify iframe：首次打开才注入 src
-    if (difyFrame && !difyFrame.src && difyFrame.dataset.src) {
-      difyFrame.src = difyFrame.dataset.src;
-    }
-    panel.classList.add('open');
-  }
+  // 对话历史（发给后端，不含 system —— system 在后端拼）
+  const chatHistory = [];
+  let chatBusy = false;
+
+  function openChat()  { panel.classList.add('open'); setTimeout(() => chatField?.focus(), 400); }
   function closeChat() { panel.classList.remove('open'); }
 
   bubble.addEventListener('click', openChat);
   document.getElementById('ctaChat').addEventListener('click', openChat);
   document.getElementById('chatClose').addEventListener('click', closeChat);
 
-  // 旧的脚本化聊天已被 Dify 真 AI iframe 取代；保留空函数避免其它地方报错
-  function appendMsg() {}
+  function appendMsg(text, who) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + who;
+    el.textContent = text;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
+  // 发送一条用户消息 → 流式接收 AI 回复
+  async function sendToAI(text) {
+    if (chatBusy || !text.trim()) return;
+    chatBusy = true;
+    chatSend.disabled = true;
+
+    appendMsg(text, 'me');
+    chatHistory.push({ role: 'user', content: text });
+
+    // 隐藏起始话题（首次发送后）
+    const qr = document.getElementById('quickReplies');
+    if (qr) qr.style.display = 'none';
+
+    // 「正在输入」气泡
+    const typing = document.createElement('div');
+    typing.className = 'msg her typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    let replyEl = null;
+    let acc = '';
+
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatHistory }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        let msg = '抱歉，AI 暂时连不上，可以直接邮件我：hi@lijinke.com';
+        try { const j = await resp.json(); if (j.error) msg = j.error + (j.detail ? '（' + j.detail + '）' : ''); } catch {}
+        typing.remove();
+        appendMsg(msg, 'her');
+        return;
+      }
+
+      // 解析 SSE 流（OpenAI 兼容格式）
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop() || '';
+        for (const line of lines) {
+          const s = line.trim();
+          if (!s.startsWith('data:')) continue;
+          const data = s.slice(5).trim();
+          if (data === '[DONE]') continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              if (!replyEl) { typing.remove(); replyEl = appendMsg('', 'her'); }
+              acc += delta;
+              replyEl.textContent = acc;
+              msgs.scrollTop = msgs.scrollHeight;
+            }
+          } catch { /* 忽略不完整片段 */ }
+        }
+      }
+
+      if (!replyEl) { typing.remove(); appendMsg('（没收到回复，再试一次？）', 'her'); }
+      if (acc) chatHistory.push({ role: 'assistant', content: acc });
+    } catch (e) {
+      typing.remove();
+      appendMsg('网络出错了，可以直接邮件我：hi@lijinke.com', 'her');
+    } finally {
+      chatBusy = false;
+      chatSend.disabled = false;
+      chatField.focus();
+    }
+  }
+
+  chatForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = chatField.value.trim();
+    if (!text) return;
+    chatField.value = '';
+    sendToAI(text);
+  });
 
   /* ============ 微信二维码弹窗 ============ */
   function openWechatModal() {
@@ -1915,22 +2069,34 @@
       </div>`;
   }
 
-  // 聊天面板已改为 Dify 真 AI iframe，无需再初始化脚本化问候/话题
-  function renderChatInit() {}
+  // 问候语 + 起始话题（话题点击后直接发给真 AI）
+  function renderChatInit() {
+    msgs.innerHTML = '';
+    const greet = window.content?.chat?.greeting || [];
+    greet.forEach(line => {
+      const el = document.createElement('div');
+      el.className = 'msg her';
+      el.textContent = pick(line, currentLang);
+      msgs.appendChild(el);
+    });
+    const qr = document.getElementById('quickReplies');
+    if (qr && window.content?.chat) {
+      qr.style.display = '';
+      const topics = window.content.chat.topics || [];
+      const labelObj = window.content.chat.topicsLabel || { zh: '// 挑个话题', en: '// Pick a topic' };
+      qr.innerHTML = `<span class="label" data-zh="${labelObj.zh}" data-en="${labelObj.en}">${pick(labelObj, currentLang)}</span>` +
+        topics.map(t => `<button class="qr" data-q="${t.key}" data-hover data-zh="${(t.q.zh||'').replace(/"/g,'&quot;')}" data-en="${(t.q.en||'').replace(/"/g,'&quot;')}">${pick(t.q, currentLang)}</button>`).join('');
+    }
+  }
 
-  /* 聊天问题点击 (事件委托) */
+  /* 起始话题点击 → 把问题直接发给真 AI（事件委托） */
   document.body.addEventListener('click', e => {
     const btn = e.target.closest('.qr[data-q]');
     if (!btn) return;
     const key = btn.dataset.q;
     const topic = (window.content?.chat?.topics || []).find(t => t.key === key);
     if (!topic) return;
-    appendMsg(pick(topic.q, currentLang), 'me');
-    let delay = 400;
-    (topic.a || []).forEach(line => {
-      setTimeout(() => appendMsg(pick(line, currentLang), 'her'), delay);
-      delay += 700;
-    });
+    sendToAI(pick(topic.q, currentLang));
   });
 
   function renderFromContent() {
