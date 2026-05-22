@@ -540,103 +540,6 @@
   .icon-link:hover .tooltip { opacity: 1; }
 
   /* ============ 人物形象 (右下角) ============ */
-  .character-wrap {
-    position: fixed;
-    right: 40px;
-    bottom: 0;
-    width: 320px;
-    height: 56vh;
-    max-height: 620px;
-    z-index: 8;
-    pointer-events: auto;
-  }
-
-  .character {
-    width: 100%;
-    height: 100%;
-  }
-
-  /* 脚下光斑 */
-  .character-wrap::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    width: 70%;
-    height: 30px;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse at center, rgba(192, 132, 252, 0.7), transparent 70%);
-    filter: blur(15px);
-    z-index: -1;
-    animation: shadowPulse 5s ease-in-out infinite;
-  }
-
-  @keyframes shadowPulse {
-    0%, 100% { opacity: 0.7; transform: translateX(-50%) scaleX(1); }
-    50%      { opacity: 1;   transform: translateX(-50%) scaleX(1.1); }
-  }
-
-  /* 对话气泡 */
-  .bubble {
-    position: fixed;
-    z-index: 9;
-    pointer-events: auto;
-    cursor: none;
-    padding: 14px 20px;
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(168, 85, 247, 0.95));
-    border: 1px solid rgba(192, 132, 252, 0.6);
-    border-radius: 20px;
-    border-bottom-left-radius: 4px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 10px 40px rgba(168, 85, 247, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-    animation: bubbleBob 3s ease-in-out infinite;
-    white-space: nowrap;
-    transition: transform 0.3s;
-  }
-
-  .bubble:hover {
-    transform: scale(1.05);
-  }
-
-  .bubble .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: #fff;
-    border-radius: 50%;
-    margin: 0 1px;
-    animation: typing 1.4s infinite ease-in-out;
-  }
-
-  .bubble .dot:nth-child(2) { animation-delay: 0.2s; }
-  .bubble .dot:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes typing {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-    30%           { transform: translateY(-4px); opacity: 1; }
-  }
-
-  @keyframes bubbleBob {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-8px); }
-  }
-
-  .bubble::after {
-    content: "";
-    position: absolute;
-    bottom: -8px;
-    left: 24px;
-    width: 16px;
-    height: 16px;
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(168, 85, 247, 0.95));
-    border-right: 1px solid rgba(192, 132, 252, 0.6);
-    border-bottom: 1px solid rgba(192, 132, 252, 0.6);
-    transform: rotate(45deg);
-  }
-
   /* ============ 聊天面板 ============ */
   .chat-panel {
     position: fixed;
@@ -1214,14 +1117,6 @@
   .contact-card .val { font-size: 16px; color: #fff; font-weight: 600; margin-top: 2px; word-break: break-all; }
 
   /* ============ 响应式 ============ */
-  @media (max-width: 1100px) {
-    .character-wrap {
-      width: 240px;
-      height: 44vh;
-      right: 16px;
-    }
-  }
-
   @media (max-width: 900px) {
     body { cursor: auto; }
     .cursor-dot, .cursor-ring, .cursor-glow { display: none; }
@@ -1229,25 +1124,6 @@
     .nav { padding: 16px 20px; }
     .nav-links { display: none; }
     .hero { padding: 100px 20px 60px; }
-
-    /* 手机端: 只显示头部, 贴右下小尺寸 */
-    .character-wrap {
-      width: 130px;
-      height: 130px;
-      right: 14px;
-      bottom: 14px;
-      border-radius: 50%;
-      overflow: hidden;
-      background: radial-gradient(circle at center, rgba(168, 85, 247, 0.25), rgba(13, 4, 40, 0.6));
-      border: 2px solid rgba(192, 132, 252, 0.5);
-      box-shadow: 0 10px 40px rgba(168, 85, 247, 0.5);
-    }
-    .character-wrap::after { display: none; }
-
-    .bubble {
-      font-size: 12px;
-      padding: 10px 14px;
-    }
 
     .stat-row { flex-wrap: wrap; gap: 24px; padding: 20px; }
     .chat-panel { width: 100vw; }
@@ -1323,16 +1199,6 @@
     <span id="contactIcons" style="display:contents"></span>
   </div>
 </main>
-
-<!-- ============ 人物形象 + 对话气泡 ============ -->
-<div class="character-wrap" id="characterWrap">
-  <div class="character" id="character"></div>
-</div>
-
-<div class="bubble" id="bubble" data-hover>
-  <span id="bubbleText" data-bind="bubble">Hey 👋 点我聊天</span>
-  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-</div>
 
 <!-- ============ 聊天面板 ============ -->
 <aside class="chat-panel" id="chatPanel">
@@ -1688,7 +1554,7 @@
   });
 
   /* ============ 磁吸按钮 ============ */
-  document.querySelectorAll('.btn, .icon-link, .nav-cta, .bubble').forEach(el => {
+  document.querySelectorAll('.btn, .icon-link, .nav-cta').forEach(el => {
     el.addEventListener('mousemove', e => {
       const rect = el.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
@@ -1699,42 +1565,6 @@
       el.style.transform = '';
     });
   });
-
-  /* ============ 人物 3D 视差(鼠标移动 → perspective 倾斜)============ */
-  const characterWrap = document.getElementById('characterWrap');
-  const character = document.getElementById('character');
-  let cx = 0, cy = 0, tcx = 0, tcy = 0;
-
-  window.addEventListener('mousemove', e => {
-    tcx = (e.clientX / window.innerWidth - 0.5) * 2;
-    tcy = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  function animateCharacter() {
-    // CSS 3D transform disabled when Three.js character is active
-    if (!window.char3dActive) {
-      cx += (tcx - cx) * 0.08;
-      cy += (tcy - cy) * 0.08;
-      characterWrap.style.transform = `rotateY(${cx * 8}deg) rotateX(${cy * -4}deg)`;
-    }
-    requestAnimationFrame(animateCharacter);
-  }
-  animateCharacter();
-
-  /* ============ 对话气泡位置 (跟随人物头顶) ============ */
-  const bubble = document.getElementById('bubble');
-  function positionBubble() {
-    const rect = characterWrap.getBoundingClientRect();
-    // 头部约在容器顶部 8% 处, 偏右一些
-    const headX = rect.left + rect.width * 0.55;
-    const headY = rect.top + rect.height * 0.08;
-    const bubbleW = bubble.offsetWidth || 180;
-    bubble.style.left = (headX - bubbleW - 10) + 'px';
-    bubble.style.top  = (headY - 60) + 'px';
-  }
-  positionBubble();
-  window.addEventListener('resize', positionBubble);
-  setInterval(positionBubble, 100);
 
   /* ============ 聊天面板（真 AI · GLM-4-Flash via /api/chat） ============ */
   const panel = document.getElementById('chatPanel');
@@ -1750,7 +1580,6 @@
   function openChat()  { panel.classList.add('open'); setTimeout(() => chatField?.focus(), 400); }
   function closeChat() { panel.classList.remove('open'); }
 
-  bubble.addEventListener('click', openChat);
   document.getElementById('ctaChat').addEventListener('click', openChat);
   document.getElementById('chatClose').addEventListener('click', closeChat);
 
@@ -2259,23 +2088,7 @@
   from { opacity:0; transform:scale(0.85) translateY(20px); }
   to   { opacity:1; transform:scale(1) translateY(0); }
 }
-@keyframes char-emojiBurst {
-  0%   { opacity: 0; transform: translateY(0)    scale(0.4); }
-  25%  { opacity: 1; transform: translateY(-18px) scale(1.3); }
-  100% { opacity: 0; transform: translateY(-100px) scale(0.9); }
-}
 </style>
 
-<!-- VRM 3D character (Three.js + @pixiv/three-vrm) -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-    "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3/lib/three-vrm.module.min.js"
-  }
-}
-</script>
-<script type="module" src="assets/character3d.js?v=14"></script>
 </body>
 </html>
