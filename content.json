@@ -38,12 +38,39 @@
       "zh": "4 年制造业产品经验后看到 AI 在垂直行业的落地机会，系统学习 AI 产品知识并成功转型。理解 AI 不是万能的、技术有边界 — 做的 3 个 AI 项目都是在深入理解业务痛点后，找到 AI 能真正解决问题的切入点：质检 AI+人工协同、RAG 知识库、时序预测采购建议。希望把 AI 真正用起来解决业务问题，而不是为了 AI 而 AI。",
       "en": "After 4 years in manufacturing product, I spotted real vertical AI opportunities and systematically retrained into AI product. AI has limits — all 3 of my AI projects started from a deep business pain point and found where AI genuinely solves it: AI+human QC, RAG knowledge base, time-series purchasing. I want AI to actually solve business problems, not AI for AI's sake."
     },
+    "methodologyTitle": { "zh": "AI 产品落地方法论", "en": "How I Ship AI" },
+    "methodology": [
+      {
+        "step":  "01",
+        "title": { "zh": "感知 · 视觉/多模态识别", "en": "Perceive · Vision & Multimodal" },
+        "desc":  {
+          "zh": "视觉质检沉淀出「标注—阈值—置信度分级」范式，可迁移到目标检测、缺陷识别等感知类场景。",
+          "en": "Visual QC distilled a reusable label–threshold–confidence-tiering pattern, transferable to detection and defect-recognition tasks."
+        }
+      },
+      {
+        "step":  "02",
+        "title": { "zh": "决策 · 规则引擎 + 模型预测", "en": "Decide · Rules + Model Forecast" },
+        "desc":  {
+          "zh": "验证「先规则保下限、再模型提上限」的渐进路线，适用于预测、调度类决策场景。",
+          "en": "Validated a progressive path — rules secure the floor, models raise the ceiling — for forecasting and scheduling decisions."
+        }
+      },
+      {
+        "step":  "03",
+        "title": { "zh": "执行 · 人机协同补边界", "en": "Execute · Human-in-the-Loop" },
+        "desc":  {
+          "zh": "明确 AI 能力边界，高置信自动执行、低置信交人工接管 —— 可靠落地的核心。",
+          "en": "Define AI's limits: auto-execute on high confidence, hand off to humans on low — the core of reliable deployment."
+        }
+      }
+    ],
     "educationTitle": { "zh": "教育背景", "en": "Education" },
     "education": [
       {
         "when":  "2018 — 2022",
-        "title": { "zh": "本科 · 武汉理工大学", "en": "B.S. · Wuhan University of Technology" },
-        "sub":   { "zh": "GPA 3.8/4.0 · 前 10%", "en": "GPA 3.8/4.0 · Top 10%" }
+        "title": { "zh": "本科 · 武汉理工大学 · 工程管理", "en": "B.S. · Wuhan University of Technology · Engineering Mgmt" },
+        "sub":   { "zh": "GPA 3.8/4.0 · 专业前 10%", "en": "GPA 3.8/4.0 · Top 10%" }
       }
     ],
     "trainingTitle": { "zh": "进修与认证", "en": "Continued Learning" },
@@ -61,7 +88,7 @@
     "badges": [
       { "key": "4+",    "val": { "zh": "年产品经验",        "en": "Years in Product" } },
       { "key": "3",     "val": { "zh": "个 0→1 AI 项目",    "en": "0→1 AI Projects" } },
-      { "key": "$5M+",  "val": { "zh": "主导品牌年销售额",  "en": "Brand ARR (USD)" } },
+      { "key": "92%",   "val": { "zh": "RAG 回答准确率",    "en": "RAG Answer Accuracy" } },
       { "key": "100K+", "val": { "zh": "新媒体粉丝积累",    "en": "Social Followers Built" } }
     ]
   },
@@ -79,16 +106,16 @@
         "sub":   { "zh": "AI 产品线 · 深圳",                                       "en": "AI Product Line · Shenzhen" },
         "bullets": [
           {
-            "zh": "主导碳纤维零部件 AI 质检辅助系统 0→1：基于商汤视觉 AI + 自建 1200+ 张缺陷样本图，设计 AI+人工协同方案（置信度 > 80% 判缺陷，50%-80% 标疑似）。上线后整体质检效率 +40%（日均 500→700 件），漏检率从 8% 降至 2%，人工工作量 −30%。",
-            "en": "Led the 0→1 of an AI-assisted QC system for carbon fiber parts. Built on SenseTime vision AI + 1,200 in-house defect samples. Designed an AI+human hybrid (confidence >80% = defect, 50–80% = flagged for review). Post-launch: QC efficiency +40% (500→700 parts/day), miss rate 8% → 2%, manual workload −30%."
+            "zh": "主导碳纤维零部件 AI 视觉质检系统 0→1（感知）：商汤视觉 AI + 自建 1200+ 张缺陷样本，AI+人工协同（置信度 > 80% 判缺陷，50%-80% 标疑似），初筛准确率 85%，沉淀「标注—阈值—置信度分级」可复用范式。漏检率 8%→2%（↓75%），质检效率 +40%（日均 500→700 件），人工工作量 −30%。",
+            "en": "Led the 0→1 of an AI visual QC system for carbon fiber parts (Perceive): SenseTime vision AI + 1,200 in-house defect samples, AI+human hybrid (confidence >80% = defect, 50–80% = review), 85% first-pass accuracy, distilling a reusable label–threshold–tiering pattern. Miss rate 8%→2% (−75%), QC efficiency +40% (500→700/day), manual workload −30%."
           },
           {
-            "zh": "搭建内部销售知识库 RAG 助手：整合 200+ 产品文档/报价/历史询盘，Claude API + Pinecone 向量库，定义 Prompt 模板与召回策略。新销售上手周期从 2 周缩短到 3 天，常见问题响应从 30 分钟降至 2 分钟，覆盖率 95% / 准确率 92%，销售满意度 3.2 → 4.5/5。",
-            "en": "Built an internal sales RAG knowledge base: 200+ docs / pricing / inquiry history with Claude API + Pinecone. Defined prompt templates and retrieval strategy. Sales onboarding cut from 2 weeks to 3 days; common-question response 30min → 2min; 95% coverage, 92% accuracy; sales satisfaction 3.2 → 4.5/5."
+            "zh": "搭建内部销售知识库 RAG 助手（多模态交互）：整合 200+ 产品文档/报价/历史询盘，Claude API + Pinecone 多路召回与重排，定义专属切片与 Prompt 模板，50 个典型场景评测先行。新销售上手 2 周→3 天，问题响应 30 分→2 分，覆盖率 95% / 准确率 92%，销售满意度 3.2 → 4.5/5。",
+            "en": "Built an internal sales RAG knowledge base (multimodal): 200+ docs / pricing / inquiry history with Claude API + Pinecone multi-route retrieval & reranking, custom chunking and prompt templates, eval-first across 50 scenarios. Onboarding 2 weeks → 3 days; response 30min → 2min; 95% coverage, 92% accuracy; sales satisfaction 3.2 → 4.5/5."
           },
           {
-            "zh": "设计碳纤维原材料智能采购建议系统：基于 3 年订单（12000+ 条）+ 汇率 + 物流 + 车展档期，用 Prophet 时序模型生成 90 天需求曲线 + 采购建议。库存周转 60 → 42 天（−30%），缺货导致订单延期月均 8 → 2 次（−75%），释放现金流约 ¥200 万。",
-            "en": "Designed a smart purchasing recommendation system: 3 years of orders (12K+ rows) + FX + logistics + auto-show seasonality. Prophet time-series forecasts 90-day demand. Inventory turnover 60 → 42 days (−30%), stockout-driven delays 8 → 2 per month (−75%), ~¥2M cash flow released."
+            "zh": "设计碳纤维原材料智能采购建议系统（时序预测 · 决策）：3 年订单（12000+ 条）+ 汇率/物流/车展档期 8 个因素，Prophet 生成 90 天需求曲线 + 规则引擎给采购建议（先规则保下限、再模型提上限）。库存周转 60 → 42 天（↑30%），缺货延期月均 8 → 2 次（↓75%），库存积压 15 → 1 天，采购决策效率 +50%；自研部署成本 < 5 万（vs 百万级 SAP）。",
+            "en": "Designed a smart purchasing recommendation system (forecast · decide): 3 years of orders (12K+) + 8 factors (FX/logistics/auto-show seasonality). Prophet forecasts 90-day demand + a rule engine issues purchase advice (rules secure the floor, model raises the ceiling). Inventory turnover 60 → 42 days (+30%), stockout delays 8 → 2/month (−75%), overstock 15 → 1 day, purchasing-decision efficiency +50%; in-house cost <¥50K (vs ¥1M+ SAP)."
           }
         ]
       },
@@ -98,8 +125,8 @@
         "sub":   { "zh": "碳纤维汽车 / 摩托车零部件产品线 · 深圳",            "en": "Carbon Fiber Auto/Moto Parts · Shenzhen" },
         "bullets": [
           {
-            "zh": "负责碳纤维汽车 / 摩托车零部件产品线（车身覆盖件 / 整流罩 / 排气管等 200+ SKU）；主导美国品牌 0→1 搭建，3 年内年销售额突破 $5M。",
-            "en": "Owned the carbon fiber auto/moto parts product line (200+ SKUs: body kits, fairings, exhausts). Led the 0→1 of the US brand, scaling to $5M+ annual sales in 3 years."
+            "zh": "负责碳纤维汽车 / 摩托车零部件产品线（车身覆盖件 / 整流罩 / 排气管等 200+ SKU）；主导海外品牌从 0→1 落地及销售体系搭建。",
+            "en": "Owned the carbon fiber auto/moto parts product line (200+ SKUs: body kits, fairings, exhausts). Led the 0→1 launch of the overseas brand and its sales system."
           },
           {
             "zh": "管理国内外新媒体运营（小红书 / 抖音 / 公众号 / Facebook / Instagram）+ 阿里国际站产品上架；带 1 剪辑 + 1 运营助手月均产出 50+ 条内容；阿里国际站询盘转化率 +35%，新媒体粉丝累计 10 万+。",
